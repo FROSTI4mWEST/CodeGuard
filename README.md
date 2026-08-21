@@ -26,7 +26,7 @@ View your app in AI Studio: https://ai.studio/apps/a7b6d964-da9f-444a-91b7-9eb80
 
 ## Deploy on Render
 
-1. Push this project to a GitHub repository, then create a new **Blueprint** service in Render and select that repository. Render will read `render.yaml`.
+1. Push this project to a GitHub repository, then create a new **Blueprint** service in Render and select that repository. Render will read `render.yaml`. The build command installs development dependencies because Vite and esbuild generate the production bundle.
 2. In Render, set `GEMINI_API_KEY` as a secret environment variable. Do not add it to the repository or a client-side `VITE_` variable.
 3. After Render assigns a public URL, add its hostname (for example, `codeguard.onrender.com`) to **Firebase Console → Authentication → Settings → Authorized domains**. This is required for Google and GitHub popup sign-in.
 4. Deploy Firestore rules separately in the Firebase Console: select database `ai-studio-a7b6d964-da9f-444a-91b7-9eb80b4eca43`, open **Rules**, paste `firestore.rules`, and publish. Render cannot deploy Firebase security rules.

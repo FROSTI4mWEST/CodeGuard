@@ -3,7 +3,8 @@ services:
     name: codeguard
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build
+    # NODE_ENV is production at runtime, but this build still needs Vite and esbuild.
+    buildCommand: npm ci --include=dev && npm run build && test -f dist/server.cjs
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
