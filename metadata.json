@@ -1,0 +1,8 @@
+{
+  "name": "CodeGuard",
+  "description": "AI-powered security audit platform for GitHub repositories. Scan codebases with Gemini, detect vulnerabilities, track remediation progress, and generate custom security policies.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

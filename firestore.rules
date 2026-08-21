@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function hasRole(role) {
+      return isSignedIn()
+        && exists(userPath())
+        && get(userPath()).data.role == role;
+    }
+
+    function canWriteSecurityData() {
+      return hasRole('admin') || hasRole('developer');
+    }
+
+    function ownsRepository(repositoryId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/repositories/$(repositoryId))
+        && get(/databases/$(database)/documents/repositories/$(repositoryId)).data.addedBy == request.auth.uid;
+    }
+
+    function validSeverity(severity) {
+      return severity in ['critical', 'high', 'medium', 'low'];
+    }
+
+    // Users may only access their own profile. New accounts start as developers;
+    // role changes must be made by a trusted administrative process.
+    match /users/{userId} {
+      allow read, delete: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'developer';
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    match /repositories/{repositoryId} {
+      // Reads remain available to signed-in users for the shared MVP dashboard.
+      allow read: if isSignedIn();
+      allow create: if canWriteSecurityData()
+        && request.resource.data.addedBy == request.auth.uid;
+      allow update: if canWriteSecurityData()
+        && (hasRole('admin') || resource.data.addedBy == request.auth.uid)
+        && request.resource.data.addedBy == resource.data.addedBy;
+      allow delete: if canWriteSecurityData()
+        && (hasRole('admin') || resource.data.addedBy == request.auth.uid);
+    }
+
+    match /repositories/{repositoryId}/scans/{scanId} {
+      allow read: if isSignedIn();
+      allow create: if canWriteSecurityData()
+        && (hasRole('admin') || ownsRepository(repositoryId))
+        && request.resource.data.id == scanId
+        && request.resource.data.repositoryId == repositoryId
+        && request.resource.data.status == 'scanning';
+      allow update: if canWriteSecurityData()
+        && (hasRole('admin') || ownsRepository(repositoryId))
+        && resource.data.status == 'scanning'
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.repositoryId == resource.data.repositoryId
+        && request.resource.data.status in ['completed', 'failed']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'score', 'findingsCount', 'criticalCount', 'highCount',
+          'mediumCount', 'lowCount', 'scanDuration'
+        ]);
+      allow delete: if false;
+    }
+
+    match /repositories/{repositoryId}/vulnerabilities/{vulnerabilityId} {
+      allow read: if isSignedIn();
+      allow create: if canWriteSecurityData()
+        && (hasRole('admin') || ownsRepository(repositoryId))
+        && request.resource.data.id == vulnerabilityId
+        && request.resource.data.repositoryId == repositoryId
+        && validSeverity(request.resource.data.severity)
+        && request.resource.data.status == 'open'
+        && exists(/databases/$(database)/documents/repositories/$(repositoryId)/scans/$(request.resource.data.scanId));
+      allow update: if canWriteSecurityData()
+        && (hasRole('admin') || ownsRepository(repositoryId))
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.scanId == resource.data.scanId
+        && request.resource.data.repositoryId == resource.data.repositoryId
+        && request.resource.data.severity == resource.data.severity
+        && request.resource.data.status in ['open', 'in-progress', 'resolved', 'ignored']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'resolvedAt', 'resolvedBy'
+        ]);
+      allow delete: if false;
+    }
+
+    match /policies/{policyId} {
+      allow read: if isSignedIn();
+      // Developers retain the existing policy-manager workflow; viewers stay read-only.
+      allow create: if canWriteSecurityData()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if canWriteSecurityData();
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if hasRole('admin');
+      allow create: if canWriteSecurityData()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}

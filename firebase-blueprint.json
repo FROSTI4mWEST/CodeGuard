@@ -1,0 +1,138 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access control.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "developer", "viewer"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Repository": {
+      "title": "Repository",
+      "description": "A GitHub repository added to the platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "owner": { "type": "string" },
+        "full_name": { "type": "string" },
+        "url": { "type": "string" },
+        "visibility": { "type": "string", "enum": ["public", "private"] },
+        "healthScore": { "type": "number" },
+        "lastScanId": { "type": "string" },
+        "lastScanDate": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "addedBy": { "type": "string" }
+      },
+      "required": ["full_name", "url", "addedBy"]
+    },
+    "Scan": {
+      "title": "Scan",
+      "description": "Recording of a security scan session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "repositoryId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "scanning", "completed", "failed"] },
+        "score": { "type": "number" },
+        "findingsCount": { "type": "integer" },
+        "criticalCount": { "type": "integer" },
+        "highCount": { "type": "integer" },
+        "mediumCount": { "type": "integer" },
+        "lowCount": { "type": "integer" },
+        "scanDuration": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["repositoryId", "status", "createdAt"]
+    },
+    "Vulnerability": {
+      "title": "Vulnerability",
+      "description": "A detected security risk or vulnerability.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "scanId": { "type": "string" },
+        "repositoryId": { "type": "string" },
+        "category": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "risk": { "type": "string" },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+        "remediation": { "type": "string" },
+        "codeSnippet": { "type": "string" },
+        "filePath": { "type": "string" },
+        "lineStart": { "type": "integer" },
+        "lineEnd": { "type": "integer" },
+        "status": { "type": "string", "enum": ["open", "in-progress", "resolved", "ignored"] },
+        "detectedAt": { "type": "string", "format": "date-time" },
+        "resolvedAt": { "type": "string", "format": "date-time" },
+        "resolvedBy": { "type": "string" }
+      },
+      "required": ["scanId", "repositoryId", "title", "severity", "status"]
+    },
+    "Policy": {
+      "title": "Policy",
+      "description": "Custom security policies based on identified risks.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "rules": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["name", "rules", "createdBy"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System activity logs for compliance and security.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string" },
+        "resourceType": { "type": "string" },
+        "resourceId": { "type": "string" }
+      },
+      "required": ["userId", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and RBAC."
+    },
+    "/repositories/{repositoryId}": {
+      "schema": "Repository",
+      "description": "Tracked GitHub repositories."
+    },
+    "/repositories/{repositoryId}/scans/{scanId}": {
+      "schema": "Scan",
+      "description": "Scan history for a repository."
+    },
+    "/repositories/{repositoryId}/vulnerabilities/{vulnerabilityId}": {
+      "schema": "Vulnerability",
+      "description": "Findings for a repository."
+    },
+    "/policies/{policyId}": {
+      "schema": "Policy",
+      "description": "Company security policies."
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "System-wide tracking of actions."
+    }
+  }
+}
