@@ -203,12 +203,12 @@ ${policy.rules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 uppercase">SECURITY POLICIES & ENFORCEMENT RULES</h2>
-            <span className="text-xs px-2.5 py-0.5 bg-blue-50 text-[#1976d2] border border-blue-200 rounded-full font-bold uppercase">
+            <h2 className="text-xl font-bold tracking-tight text-slate-950">Security Policies & Rules</h2>
+            <span className="text-xs px-2 py-0.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-md font-medium">
               {policies.length} Active
             </span>
           </div>
-          <p className="text-slate-500 text-xs mt-1">Institutional compliance standards and verified security enforcement rules.</p>
+          <p className="text-slate-500 text-xs mt-0.5">Security standards and automated enforcement rules for your repositories.</p>
         </div>
       </div>
 
@@ -219,7 +219,7 @@ ${policy.rules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="p-3.5 border border-emerald-200 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex items-center gap-2 shadow-xs"
+            className="p-3.5 border border-slate-200 bg-slate-50 text-slate-800 rounded-lg text-xs flex items-center gap-2 shadow-2xs"
           >
             <span className="font-semibold">{successNotice}</span>
           </motion.div>
@@ -227,29 +227,29 @@ ${policy.rules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
       </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Policy Draftsman (No AI Powered branding) */}
+        {/* Left Column: Policy Draftsman */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="border border-slate-200 bg-white p-6 rounded-2xl shadow-xs">
-            <h3 className="text-sm font-bold mb-1.5 text-slate-900 uppercase">POLICY DRAFTSMAN</h3>
-            <p className="text-slate-500 text-xs leading-relaxed mb-6">
-              Specify any security domain to generate a verified institutional compliance policy draft grounded in OWASP Top 10 standards.
+          <div className="border border-slate-200 bg-white p-5 rounded-xl shadow-xs">
+            <h3 className="text-sm font-semibold mb-1 text-slate-950 uppercase tracking-wider">Policy Generator</h3>
+            <p className="text-slate-500 text-xs leading-relaxed mb-4">
+              Enter any security domain or requirement to create a structured compliance policy.
             </p>
 
             <form onSubmit={(e) => { e.preventDefault(); handleGenerate(); }} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-700 uppercase">POLICY DOMAIN OR TOPIC</label>
+                <label className="text-xs font-semibold text-slate-800">Policy Topic</label>
                 <input 
                   type="text" 
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="e.g. Secrets Rotation & Vault Storage"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#1976d2] focus:bg-white transition-all"
+                  placeholder="e.g. Secrets Rotation & Key Storage"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
                   required
                 />
               </div>
 
               {error && (
-                <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-xl text-xs">
+                <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-lg text-xs">
                   {error}
                 </div>
               )}
@@ -257,19 +257,19 @@ ${policy.rules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
               <button 
                 type="submit" 
                 disabled={generating || !topic.trim()}
-                className="w-full github-btn-primary py-2.5 px-4 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs font-semibold"
+                className="w-full rounded-lg bg-slate-950 hover:bg-slate-800 text-white py-2 px-4 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
               >
-                {generating ? 'DRAFTING SECURITY POLICY...' : 'GENERATE POLICY'}
+                {generating ? 'Drafting Policy…' : 'Generate Policy'}
               </button>
             </form>
           </div>
 
           {/* Quick Domain Presets */}
-          <div className="border border-slate-200 bg-white p-5 rounded-2xl shadow-xs space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Quick Domain Presets
+          <div className="border border-slate-200 bg-white p-5 rounded-xl shadow-xs space-y-3">
+            <h4 className="text-xs font-semibold text-slate-950 uppercase tracking-wider">
+              Common Policy Templates
             </h4>
-            <p className="text-[11px] text-slate-500">One-click generate verified baseline policies:</p>
+            <p className="text-[11px] text-slate-500">Quick-start standard security guidelines:</p>
             
             <div className="space-y-2 pt-1">
               {PRESET_TOPICS.map((preset, idx) => (
@@ -280,9 +280,9 @@ ${policy.rules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
                     handleGenerate(preset.topic);
                   }}
                   disabled={generating}
-                  className="w-full text-left p-3 bg-[#f8fafc] hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group cursor-pointer"
+                  className="w-full text-left p-3 bg-slate-50/50 hover:bg-slate-100/70 border border-slate-200 rounded-lg transition-all group cursor-pointer"
                 >
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 group-hover:text-[#1976d2]">
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-900 group-hover:text-slate-950">
                     <span>{preset.label}</span>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5">{preset.desc}</p>

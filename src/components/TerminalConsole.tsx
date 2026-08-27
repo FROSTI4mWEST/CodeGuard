@@ -161,19 +161,17 @@ export function TerminalConsole({
   return (
     <div className="space-y-4 max-w-5xl mx-auto font-sans">
       {/* Module Title Banner */}
-      <div className="border border-slate-200 bg-white p-5 rounded-2xl flex items-center justify-between shadow-xs">
+      <div className="border border-slate-200 bg-white p-4 rounded-xl flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1976d2]">
-            <Terminal className="w-5 h-5" />
-          </div>
+          <Terminal className="w-5 h-5 text-slate-900" />
           <div>
-            <h2 className="text-base font-bold text-slate-900 uppercase">CodeGuard Security CLI</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Command-line interface for automated code security auditing</p>
+            <h2 className="text-sm font-semibold text-slate-950">CodeGuard Security Console</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Direct command interface for running security scans and checking assets.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-mono text-emerald-700 font-semibold">CLI ACTIVE</span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
+          <span className="text-[11px] font-mono text-slate-700 font-medium">Console Ready</span>
         </div>
       </div>
 

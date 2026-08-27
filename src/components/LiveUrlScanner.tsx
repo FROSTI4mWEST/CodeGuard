@@ -240,22 +240,20 @@ export function LiveUrlScanner() {
           {/* TLS Certificate & DNS Posture Grid */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* TLS / Certificate Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-md bg-blue-50 p-1.5 text-[#1976d2]">
-                    <Lock className="h-4 w-4" />
-                  </div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">TLS & Certificate Health</h4>
+                  <Lock className="h-4 w-4 text-slate-900" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">SSL & Certificate Health</h4>
                 </div>
                 {result.tlsCert ? (
                   <span
-                    className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                    className={`rounded-md px-2 py-0.5 font-mono text-[11px] font-medium border ${
                       result.tlsCert.expired
-                        ? 'border border-red-200 bg-red-50 text-red-700'
+                        ? 'border-red-200 bg-red-50 text-red-800'
                         : result.tlsCert.expiresSoon
-                        ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                        ? 'border-amber-200 bg-amber-50 text-amber-800'
+                        : 'border-slate-200 bg-slate-50 text-slate-800'
                     }`}
                   >
                     {result.tlsCert.expired
@@ -265,8 +263,8 @@ export function LiveUrlScanner() {
                       : `Valid (${result.tlsCert.daysRemaining}d remaining)`}
                   </span>
                 ) : (
-                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-500">
-                    No TLS Detected
+                  <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
+                    No SSL Detected
                   </span>
                 )}
               </div>
@@ -276,7 +274,7 @@ export function LiveUrlScanner() {
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div>
                       <span className="text-slate-400">Issuer:</span>{' '}
-                      <span className="font-semibold text-slate-800">{result.tlsCert.issuer}</span>
+                      <span className="font-medium text-slate-900">{result.tlsCert.issuer}</span>
                     </div>
                     <div>
                       <span className="text-slate-400">Subject:</span>{' '}
@@ -289,18 +287,18 @@ export function LiveUrlScanner() {
                     <div>
                       <span className="text-slate-400">Validation:</span>{' '}
                       <span
-                        className={`font-semibold ${
-                          result.tlsCert.authorized ? 'text-emerald-700' : 'text-red-700'
+                        className={`font-medium ${
+                          result.tlsCert.authorized ? 'text-slate-900' : 'text-red-700'
                         }`}
                       >
-                        {result.tlsCert.authorized ? 'CA Authorized' : result.tlsCert.authorizationError || 'Untrusted'}
+                        {result.tlsCert.authorized ? 'Trusted Certificate' : result.tlsCert.authorizationError || 'Untrusted'}
                       </span>
                     </div>
                   </div>
 
                   {result.tlsCert.sans && result.tlsCert.sans.length > 0 && (
                     <div className="pt-1.5 border-t border-slate-100">
-                      <span className="text-[10px] font-bold uppercase text-slate-400">SAN Coverage ({result.tlsCert.sans.length}):</span>
+                      <span className="text-[10px] font-semibold uppercase text-slate-400">SAN Coverage ({result.tlsCert.sans.length}):</span>
                       <div className="mt-1 flex flex-wrap gap-1 max-h-16 overflow-y-auto">
                         {result.tlsCert.sans.slice(0, 6).map((san) => (
                           <span key={san} className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[9px] text-slate-600">
@@ -317,18 +315,16 @@ export function LiveUrlScanner() {
                   )}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">Target host did not present a valid TLS certificate on port 443.</p>
+                <p className="text-xs text-slate-500">Target host did not present an SSL certificate on port 443.</p>
               )}
             </div>
 
             {/* DNS & Email Security Posture Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-md bg-blue-50 p-1.5 text-[#1976d2]">
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">DNS & Email Defense Posture</h4>
+                  <Mail className="h-4 w-4 text-slate-900" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">Email & Domain Spoofing Defense</h4>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">
                   {result.dnsPosture?.domain || 'DNS'}
@@ -336,22 +332,22 @@ export function LiveUrlScanner() {
               </div>
 
               {result.dnsPosture ? (
-                <div className="space-y-2.5 text-xs">
+                <div className="space-y-2 text-xs">
                   {/* SPF */}
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 font-medium">SPF Record</span>
                     {result.dnsPosture.spf.configured ? (
                       <span
-                        className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
+                        className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-medium border ${
                           result.dnsPosture.spf.isPermissive
-                            ? 'border border-red-200 bg-red-50 text-red-700'
-                            : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-slate-200 bg-slate-50 text-slate-800'
                         }`}
                       >
-                        {result.dnsPosture.spf.policy || 'Configured'}
+                        {result.dnsPosture.spf.policy || 'Active'}
                       </span>
                     ) : (
-                      <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-700">
+                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500">
                         Missing
                       </span>
                     )}
@@ -362,16 +358,12 @@ export function LiveUrlScanner() {
                     <span className="text-slate-600 font-medium">DMARC Policy</span>
                     {result.dnsPosture.dmarc.configured ? (
                       <span
-                        className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
-                          result.dnsPosture.dmarc.policy === 'reject' || result.dnsPosture.dmarc.policy === 'quarantine'
-                            ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                            : 'border border-amber-200 bg-amber-50 text-amber-700'
-                        }`}
+                        className="rounded-md px-2 py-0.5 font-mono text-[10px] font-medium border border-slate-200 bg-slate-50 text-slate-800"
                       >
                         p={result.dnsPosture.dmarc.policy || 'none'}
                       </span>
                     ) : (
-                      <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-700">
+                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500">
                         Missing
                       </span>
                     )}
@@ -381,45 +373,45 @@ export function LiveUrlScanner() {
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 font-medium">CAA Records</span>
                     {result.dnsPosture.caa.configured ? (
-                      <span className="rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-700">
-                        {result.dnsPosture.caa.records.length} Authorized
+                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-700">
+                        {result.dnsPosture.caa.records.length} Configured
                       </span>
                     ) : (
-                      <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500">
-                        Not Configured
+                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400">
+                        Not Set
                       </span>
                     )}
                   </div>
 
                   {/* MX */}
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">Mail Exchange (MX)</span>
+                    <span className="text-slate-600 font-medium">Mail Servers (MX)</span>
                     <span className="font-mono text-[10px] text-slate-600">
                       {result.dnsPosture.mx.configured
                         ? `${result.dnsPosture.mx.records.length} servers active`
-                        : 'None detected'}
+                        : 'None'}
                     </span>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">DNS posture records could not be resolved for this host.</p>
+                <p className="text-xs text-slate-500">DNS records could not be retrieved for this domain.</p>
               )}
             </div>
           </div>
 
           {/* Exposed Endpoints & Crawled Links Toggle */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileCode className="h-4 w-4 text-slate-600" />
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  Endpoint & Sensitive Path Probes
+                <FileCode className="h-4 w-4 text-slate-900" />
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
+                  Endpoint & File Probes
                 </h4>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCrawledUrls(!showCrawledUrls)}
-                className="flex items-center gap-1 text-[11px] font-semibold text-[#1976d2] hover:underline"
+                className="flex items-center gap-1 text-[11px] font-medium text-slate-900 hover:underline cursor-pointer"
               >
                 <span>{showCrawledUrls ? 'Hide Crawled URLs' : `View Crawled URLs (${result.crawledUrls.length})`}</span>
                 {showCrawledUrls ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -427,7 +419,7 @@ export function LiveUrlScanner() {
             </div>
 
             {showCrawledUrls && (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 max-h-32 overflow-y-auto space-y-1">
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 max-h-32 overflow-y-auto space-y-1">
                 {result.crawledUrls.map((href) => (
                   <p key={href} className="truncate font-mono text-[10px] text-slate-600">
                     {href}
@@ -441,15 +433,15 @@ export function LiveUrlScanner() {
                 {result.sensitivePaths.map((p) => (
                   <div
                     key={p.path}
-                    className={`flex items-center justify-between rounded-lg border p-2 text-xs font-mono ${
+                    className={`flex items-center justify-between rounded-md border p-2 text-xs font-mono ${
                       p.accessible
                         ? 'border-red-200 bg-red-50 text-red-800'
                         : 'border-slate-200 bg-slate-50 text-slate-600'
                     }`}
                   >
                     <span className="truncate">{p.path}</span>
-                    <span className="ml-1 text-[10px] font-bold">
-                      {p.accessible ? 'EXPOSED' : `HTTP ${p.status}`}
+                    <span className="ml-1 text-[10px] font-semibold">
+                      {p.accessible ? 'Exposed' : `HTTP ${p.status}`}
                     </span>
                   </div>
                 ))}
@@ -460,13 +452,13 @@ export function LiveUrlScanner() {
           </div>
 
           {/* Vulnerability & Posture Findings */}
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xs">
             <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
                   Security Findings ({filteredFindings.length})
                 </h4>
-                <p className="text-[11px] text-slate-500">Actionable remediation guidance prioritized by severity.</p>
+                <p className="text-[11px] text-slate-500">Clear explanations and recommended fixes.</p>
               </div>
 
               {/* Category Filter Pills */}
@@ -476,10 +468,10 @@ export function LiveUrlScanner() {
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase transition-colors ${
+                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer border ${
                         selectedCategory === cat
-                          ? 'bg-[#1976d2] text-white shadow-2xs'
-                          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       {cat}
@@ -490,12 +482,12 @@ export function LiveUrlScanner() {
             </div>
 
             {filteredFindings.length === 0 ? (
-              <div className="flex gap-3 p-6 text-xs text-emerald-700">
-                <ShieldCheck className="h-5 w-5 shrink-0" />
+              <div className="flex gap-3 p-6 text-xs text-slate-700">
+                <ShieldCheck className="h-5 w-5 shrink-0 text-slate-900" />
                 <div>
-                  <p className="font-bold">No issues observed in this category.</p>
+                  <p className="font-semibold text-slate-900">No security issues observed in this category.</p>
                   <p className="text-slate-500 mt-0.5">
-                    Continuous monitoring and automated regression tests are recommended.
+                    Your target passed all external security header and configuration checks.
                   </p>
                 </div>
               </div>
@@ -504,26 +496,24 @@ export function LiveUrlScanner() {
                 {filteredFindings.map((finding) => (
                   <div key={`${finding.id}-${finding.affectedUrl}`} className="p-4 hover:bg-slate-50/50 transition-colors">
                     <div className="flex items-start gap-3">
-                      <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+                      <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-slate-900" />
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="text-xs font-bold text-slate-900">{finding.title}</h5>
+                          <h5 className="text-xs font-semibold text-slate-950">{finding.title}</h5>
                           <span
-                            className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-                              severityStyle[finding.severity]
-                            }`}
+                            className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-700"
                           >
                             {finding.severity}
                           </span>
                           <span className="font-mono text-[10px] text-slate-400">
-                            {finding.category} · {finding.id}
+                            {finding.category}
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 leading-relaxed">
-                          <span className="font-semibold text-slate-800">Evidence:</span> {finding.evidence}
+                          <span className="font-semibold text-slate-800">Observation:</span> {finding.evidence}
                         </p>
                         <p className="text-xs text-slate-600 leading-relaxed">
-                          <span className="font-semibold text-slate-800">Remediation:</span> {finding.recommendation}
+                          <span className="font-semibold text-slate-800">Recommended fix:</span> {finding.recommendation}
                         </p>
                         <p className="font-mono text-[10px] text-slate-400 truncate">{finding.affectedUrl}</p>
                       </div>

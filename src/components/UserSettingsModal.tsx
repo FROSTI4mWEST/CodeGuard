@@ -156,41 +156,40 @@ export function UserSettingsModal({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
           {/* User Profile Info Card */}
-          <div className="border border-slate-200 bg-[#f8fafc] rounded-2xl p-4 space-y-4">
+          <div className="border border-slate-200 bg-slate-50/50 rounded-xl p-4 space-y-4">
             <div className="flex items-start gap-4">
               {profile?.photoURL ? (
-                <img src={profile.photoURL} alt="" className="w-12 h-12 rounded-full border border-slate-200" />
+                <img src={profile.photoURL} alt="" className="w-10 h-10 rounded-full border border-slate-200" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-lg font-bold text-[#1976d2]">
+                <div className="w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-sm font-semibold text-slate-900">
                   {displayName.charAt(0) || 'U'}
                 </div>
               )}
               <div className="space-y-1 flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-slate-900 text-sm uppercase">{displayName || 'DEVELOPER'}</h4>
-                  <span className="text-[10px] bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold uppercase">
-                    {profile?.role || 'DEVELOPER'}
+                  <h4 className="font-semibold text-slate-950 text-sm">{displayName || 'User'}</h4>
+                  <span className="text-[10px] bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-medium uppercase">
+                    {profile?.role || 'Developer'}
                   </span>
                 </div>
                 <p className="text-slate-500 text-[11px] font-mono">{user.email || 'No email associated'}</p>
-                <div className="pt-1 text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                <div className="pt-0.5 text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
                   {user.providerData[0]?.providerId === 'google.com' ? (
-                    <Chrome className="w-3.5 h-3.5 text-blue-600 inline" />
+                    <Chrome className="w-3.5 h-3.5 text-slate-700 inline" />
                   ) : (
-                    <Github className="w-3.5 h-3.5 text-slate-800 inline" />
+                    <Github className="w-3.5 h-3.5 text-slate-700 inline" />
                   )}
-                  <span>PROVIDER: {provider}</span>
+                  <span>Provider: {provider}</span>
                 </div>
               </div>
             </div>
 
             {/* Edit Display Name Form */}
             <form onSubmit={handleSaveProfile} className="pt-3 border-t border-slate-200 space-y-2">
-              <label className="block text-[11px] font-bold uppercase text-slate-700">
-                UPDATE DISPLAY NAME
+              <label className="block text-xs font-semibold text-slate-800">
+                Display Name
               </label>
               <div className="flex gap-2">
                 <input
@@ -198,74 +197,71 @@ export function UserSettingsModal({
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Enter display name..."
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#1976d2]"
+                  className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-slate-400"
                 />
                 <button
                   type="submit"
                   disabled={savingName}
-                  className="github-btn-primary px-3 py-1.5 text-xs cursor-pointer font-semibold"
+                  className="rounded-md bg-slate-950 hover:bg-slate-800 text-white px-3.5 py-1.5 text-xs font-medium cursor-pointer"
                 >
-                  {savingName ? 'SAVING...' : 'SAVE'}
+                  {savingName ? 'Saving…' : 'Save'}
                 </button>
               </div>
               {nameSavedSuccess && (
-                <p className="text-[11px] text-emerald-600 font-bold">
-                  DISPLAY NAME UPDATED SUCCESSFULLY
+                <p className="text-[11px] text-slate-700 font-medium">
+                  Display name updated successfully.
                 </p>
               )}
               {saveNameError && (
-                <p className="text-[11px] text-red-600 font-bold">
+                <p className="text-[11px] text-red-600 font-medium">
                   {saveNameError}
                 </p>
               )}
             </form>
           </div>
 
-          {/* Account & Scan Preferences */}
-          <div className="border border-slate-200 bg-white rounded-2xl p-4 space-y-3 shadow-xs">
-            <h4 className="font-bold text-slate-900 text-xs uppercase border-b border-slate-100 pb-2">
-              SECURITY & SCAN PREFERENCES
+          {/* Preferences Section */}
+          <div className="border border-slate-200 bg-white rounded-xl p-4 space-y-4">
+            <h4 className="font-semibold text-slate-950 text-xs uppercase tracking-wider">
+              Preferences & Scan Defaults
             </h4>
-
-            <div className="space-y-2">
-              <label className="flex items-center justify-between cursor-pointer p-2.5 hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors">
+            
+            <div className="space-y-3">
+              <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <div className="font-bold text-slate-800">AUTOMATED PR PATCH REMEDIATIONS</div>
-                  <p className="text-[11px] text-slate-500">Allow CodeGuard to generate automatic pull request code fixes</p>
+                  <span className="font-medium text-slate-800 block text-xs">Automatic PR Fix Proposals</span>
+                  <span className="text-slate-400 text-[11px]">Generate ready-to-merge patches for high-confidence security findings</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={autoPatch} 
+                <input
+                  type="checkbox"
+                  checked={autoPatch}
                   onChange={(e) => setAutoPatch(e.target.checked)}
-                  className="accent-[#1976d2] w-4 h-4 cursor-pointer"
+                  className="accent-slate-950 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between cursor-pointer p-2.5 hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors">
+              <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <div className="font-bold text-slate-800">SECURITY ALERT NOTIFICATIONS</div>
-                  <p className="text-[11px] text-slate-500">Receive audit alerts for critical CWE vulnerability detections</p>
+                  <span className="font-medium text-slate-800 block text-xs">Security Notifications</span>
+                  <span className="text-slate-400 text-[11px]">Notify when critical issues or expiring SSL certificates are detected</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={emailAlerts} 
+                <input
+                  type="checkbox"
+                  checked={emailAlerts}
                   onChange={(e) => setEmailAlerts(e.target.checked)}
-                  className="accent-[#1976d2] w-4 h-4 cursor-pointer"
+                  className="accent-slate-950 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <div className="flex items-center justify-between p-2.5 border border-slate-200 rounded-xl">
-                <div>
-                  <div className="font-bold text-slate-800">SAST AUDIT SCAN DEPTH</div>
-                  <p className="text-[11px] text-slate-500">OWASP Top 10 rule enforcement scanning level</p>
-                </div>
-                <select 
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span className="font-medium text-slate-800 text-xs">Scan Depth</span>
+                <select
                   value={sastDepth}
                   onChange={(e) => setSastDepth(e.target.value as any)}
-                  className="bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-xs px-2.5 py-1 focus:outline-none focus:border-[#1976d2]"
+                  className="bg-slate-50 border border-slate-200 rounded-md text-slate-800 text-xs px-2.5 py-1 focus:outline-none focus:border-slate-400"
                 >
-                  <option value="standard">STANDARD</option>
-                  <option value="deep">DEEP (RECOMMENDED)</option>
+                  <option value="standard">Standard Scan</option>
+                  <option value="deep">Deep Scan (Full OWASP)</option>
                 </select>
               </div>
             </div>

@@ -274,7 +274,7 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
                 />
                 <Bar dataKey="healthScore" radius={[4, 4, 0, 0]}>
                   {repos.map((repo, index) => (
-                    <Cell key={`cell-${index}`} fill={repo.healthScore && repo.healthScore >= 90 ? '#1976d2' : repo.healthScore && repo.healthScore >= 70 ? '#f59e0b' : '#ef4444'} />
+                    <Cell key={`cell-${index}`} fill={repo.healthScore && repo.healthScore >= 90 ? '#0f172a' : repo.healthScore && repo.healthScore >= 70 ? '#64748b' : '#ef4444'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -285,31 +285,31 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
 
       {/* Repository List */}
       <div className="border border-slate-200 bg-white rounded-xl shadow-xs overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between">
-          <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            REPOSITORY TARGETS ({repos.length})
+        <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
+            Connected Repositories ({repos.length})
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">CODEGUARD SAST MONITORING</span>
+          <span className="text-[11px] text-slate-400 font-medium">Automatic Scanning</span>
         </div>
 
         {loading ? (
           <div className="p-12 text-center text-slate-500 text-xs">
-            <p>QUERYING AUTHENTICATED USER ASSETS...</p>
+            <p>Loading repositories...</p>
           </div>
         ) : repos.length === 0 ? (
           <div className="p-12 text-center border-b border-slate-100 space-y-4">
-            <p className="text-slate-600 font-medium text-xs">No repositories connected to your user profile</p>
+            <p className="text-slate-600 font-medium text-xs">No repositories connected yet</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button 
                 onClick={() => { setShowAddModal(true); setModalTab('my_repos'); }} 
-                className="bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium text-xs px-4 py-2 rounded-lg cursor-pointer shadow-xs transition-colors flex items-center gap-2"
+                className="bg-slate-950 hover:bg-slate-800 text-white font-medium text-xs px-4 py-2 rounded-md cursor-pointer shadow-xs transition-colors flex items-center gap-2"
               >
                 <Github className="w-4 h-4" />
-                <span>Auto-Detect My GitHub Repos</span>
+                <span>Auto-Detect GitHub Repos</span>
               </button>
               <button 
                 onClick={() => { setShowAddModal(true); setModalTab('live_url'); }} 
-                className="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs px-4 py-2 rounded-lg cursor-pointer shadow-xs transition-colors"
+                className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-medium text-xs px-4 py-2 rounded-md cursor-pointer shadow-2xs transition-colors"
               >
                 Scan a Live URL
               </button>
@@ -323,29 +323,27 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
                 onClick={() => onRepoSelect(repo.id)}
                 className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors cursor-pointer group"
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 group-hover:bg-blue-50 group-hover:text-[#1976d2] group-hover:border-blue-200 transition-colors shrink-0">
-                  <Github className="w-4 h-4" />
-                </div>
+                <Github className="w-4 h-4 text-slate-700 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#1976d2] transition-colors truncate">{repo.full_name}</h4>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${repo.visibility === 'private' ? 'bg-[#8D4F27] text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-                      {repo.visibility.toUpperCase()}
+                    <h4 className="text-sm font-semibold text-slate-900 group-hover:text-slate-950 transition-colors truncate">{repo.full_name}</h4>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${repo.visibility === 'private' ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                      {repo.visibility}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-500">
-                    <span>LAST SCAN: {formatDate(repo.lastScanDate)}</span>
+                  <div className="flex items-center gap-3 mt-0.5 text-[11px] text-slate-400">
+                    <span>Last scanned: {formatDate(repo.lastScanDate)}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-6">
                   <div className="text-right">
-                    <div className="text-[10px] text-slate-400 uppercase font-semibold">SCORE</div>
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold">Score</div>
                     <div className={`text-base font-bold font-mono ${getScoreColor(repo.healthScore || 0)}`}>
                       {repo.healthScore || '--'}%
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-slate-400 group-hover:text-[#1976d2] transition-colors">VIEW</span>
+                  <span className="text-xs font-semibold text-slate-400 group-hover:text-slate-950 transition-colors">View</span>
                 </div>
               </div>
             ))}

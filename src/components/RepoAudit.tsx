@@ -951,10 +951,10 @@ function VulnerabilityCard({ vuln, expanded, onToggle, onStatusUpdate, owner, re
 
   const getSeverityStyle = (severity: string) => {
     switch (severity?.toLowerCase()) {
-      case 'critical': return 'border-red-200 text-red-700 bg-red-50';
-      case 'high': return 'border-amber-200 text-amber-700 bg-amber-50';
-      case 'medium': return 'border-blue-200 text-[#1976d2] bg-blue-50';
-      default: return 'border-slate-200 text-slate-700 bg-slate-100';
+      case 'critical': return 'border-red-200 bg-red-50/80 text-red-800';
+      case 'high': return 'border-amber-200 bg-amber-50/80 text-amber-800';
+      case 'medium': return 'border-slate-300 bg-slate-100 text-slate-800';
+      default: return 'border-slate-200 bg-slate-50 text-slate-600';
     }
   };
 
@@ -962,45 +962,39 @@ function VulnerabilityCard({ vuln, expanded, onToggle, onStatusUpdate, owner, re
   const attackText = vuln.impact || vuln.risk || '';
 
   return (
-    <div className={`border rounded-xl bg-white shadow-xs overflow-hidden transition-all duration-200 ${isConfirmed ? 'border-slate-200 hover:border-blue-300 hover:shadow-sm' : 'border-amber-200'}`}>
+    <div className="border border-slate-200 rounded-lg bg-white shadow-2xs overflow-hidden transition-all duration-150">
       <div 
         onClick={onToggle}
-        className="p-4 flex items-center gap-4 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
+        className="p-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
       >
-        <div className={`shrink-0 w-1.5 h-10 rounded-full ${vuln.severity === 'critical' ? 'bg-red-500' : isConfirmed ? 'bg-[#1976d2]' : 'bg-amber-500'}`} />
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className={`text-[10px] px-2 py-0.5 border rounded-md font-bold uppercase tracking-wider ${getSeverityStyle(vuln.severity)}`}>
-              {vuln.severity} RISK
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[10px] px-2 py-0.5 border rounded-md font-semibold uppercase tracking-wider ${getSeverityStyle(vuln.severity)}`}>
+              {vuln.severity}
             </span>
 
-            <span className={`text-[10px] px-2 py-0.5 border rounded-md font-bold uppercase ${isConfirmed ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-amber-200 text-amber-700 bg-amber-50'}`}>
-              {isConfirmed ? 'CONFIRMED IN CODE' : 'SUSPECTED'}
-            </span>
-
-            <span className="text-[11px] text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 truncate max-w-[280px]">
+            <span className="text-[11px] text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 truncate max-w-[320px]">
               {vuln.filePath}{lineNum ? ` : line ${lineNum}` : ''}
             </span>
 
             {vuln.ruleId && (
-              <span className="text-[10px] text-slate-500 font-mono px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">
+              <span className="text-[10px] text-slate-400 font-mono px-1.5 py-0.5 bg-slate-50 rounded border border-slate-200">
                 {vuln.ruleId}
               </span>
             )}
           </div>
           
-          <h4 className="text-sm font-bold text-slate-900 tracking-tight truncate">
+          <h4 className="text-sm font-semibold text-slate-950 tracking-tight">
             {vuln.title}
           </h4>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className={`text-[10px] px-2.5 py-1 border rounded-full font-bold uppercase ${vuln.status === 'resolved' ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-slate-200 text-slate-600 bg-slate-50'}`}>
-            {vuln.status === 'resolved' ? 'RESOLVED' : vuln.status}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className={`text-[11px] px-2 py-0.5 border rounded-md font-medium ${vuln.status === 'resolved' ? 'border-emerald-200 text-emerald-800 bg-emerald-50' : 'border-slate-200 text-slate-600 bg-slate-50'}`}>
+            {vuln.status === 'resolved' ? 'Resolved' : vuln.status === 'in-progress' ? 'In Progress' : 'Open'}
           </span>
-          <span className="text-xs text-slate-400 font-bold uppercase">
-            {expanded ? 'HIDE' : 'VIEW'}
+          <span className="text-xs text-slate-400 font-medium">
+            {expanded ? 'Hide' : 'Details'}
           </span>
         </div>
       </div>
@@ -1011,41 +1005,43 @@ function VulnerabilityCard({ vuln, expanded, onToggle, onStatusUpdate, owner, re
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-slate-100 bg-[#f8fafc]"
+            className="border-t border-slate-200 bg-slate-50/50"
           >
-            <div className="p-5 space-y-5">
-              {/* Vulnerability Explanation */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 shadow-xs">
-                <h5 className="text-xs font-bold text-[#1976d2] uppercase tracking-wide">
-                  WHAT IS THIS ISSUE?
+            <div className="p-5 space-y-4">
+              {/* Plain-English Explanation */}
+              <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1.5 shadow-2xs">
+                <h5 className="text-xs font-semibold text-slate-950 uppercase tracking-wider">
+                  What is the issue?
                 </h5>
                 <p className="text-xs text-slate-700 leading-relaxed font-sans">
                   {vuln.explanation || vuln.description}
                 </p>
               </div>
 
-              {/* The Attack Story / Scenario */}
-              <div className="bg-red-50/50 border border-red-200 rounded-xl p-4 space-y-2">
-                <h5 className="text-xs font-bold text-red-600 uppercase tracking-wide">
-                  ATTACK SCENARIO & EXPLOITATION PATH
-                </h5>
-                <div className="text-xs text-slate-700 leading-relaxed space-y-2 font-sans">
-                  <ReactMarkdown>{attackText}</ReactMarkdown>
+              {/* Plain-English Impact */}
+              {attackText && (
+                <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-1.5 shadow-2xs">
+                  <h5 className="text-xs font-semibold text-slate-950 uppercase tracking-wider">
+                    Why does this matter?
+                  </h5>
+                  <div className="text-xs text-slate-700 leading-relaxed space-y-1 font-sans">
+                    <ReactMarkdown>{attackText}</ReactMarkdown>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Code Evidence Section */}
               {(vuln.codeEvidence || vuln.codeSnippet) && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <h5 className="text-[11px] font-bold text-slate-800 uppercase">
-                      VERBATIM CODE EVIDENCE IN YOUR REPO {lineNum ? `(LINE ${lineNum})` : ''}
+                    <h5 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
+                      Affected code {lineNum ? `(Line ${lineNum})` : ''}
                     </h5>
-                    <span className="text-[11px] font-mono text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    <span className="text-[11px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
                       {vuln.filePath}
                     </span>
                   </div>
-                  <div className="border border-slate-200 bg-slate-900 rounded-xl p-3.5 font-mono text-xs text-emerald-400 overflow-x-auto shadow-xs">
+                  <div className="border border-slate-200 bg-slate-950 rounded-lg p-3 font-mono text-xs text-slate-100 overflow-x-auto shadow-2xs">
                     <pre className="text-xs text-slate-100 whitespace-pre-wrap leading-relaxed">
                       {vuln.codeEvidence || vuln.codeSnippet}
                     </pre>
@@ -1054,107 +1050,98 @@ function VulnerabilityCard({ vuln, expanded, onToggle, onStatusUpdate, owner, re
               )}
 
               {/* Remediation & Action Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
-                {/* Action Box: Push Fix directly or PR */}
-                <div className="border border-slate-200 bg-white rounded-xl p-4 space-y-4 flex flex-col justify-between shadow-xs">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
+                {/* Action Box */}
+                <div className="border border-slate-200 bg-white rounded-lg p-4 space-y-3 flex flex-col justify-between shadow-2xs">
                   <div className="space-y-2">
-                    <h5 className="text-xs font-bold text-[#1976d2] uppercase">
-                      AUTOMATED FIX & CODE UPDATE
+                    <h5 className="text-xs font-semibold text-slate-950 uppercase tracking-wider">
+                      Automated Remediation
                     </h5>
                     <p className="text-xs text-slate-600 leading-relaxed font-sans">
-                      Choose how you want to apply this verified patch to your GitHub repository:
+                      Apply the verified code fix directly to your repository or open a Pull Request for review:
                     </p>
 
-                    {/* Success notification if fix was pushed */}
                     {fixSuccess && (
-                      <div className="p-3 border border-blue-200 bg-blue-50 text-[#1976d2] rounded-xl space-y-2">
-                        <div className="text-xs font-bold uppercase">
+                      <div className="p-3 border border-slate-200 bg-slate-50 text-slate-800 rounded-lg space-y-2 text-xs">
+                        <div className="font-semibold text-slate-950">
                           {fixSuccess.type === 'commit' 
-                            ? (fixSuccess.isSandbox ? 'Verified Security Patch Applied (Sandbox)' : 'Code Updated in Repo')
-                            : (fixSuccess.isSandbox ? 'Pull Request Drafted (Sandbox)' : 'Pull Request Created')}
+                            ? 'Security patch committed to repository' 
+                            : 'Pull Request created on GitHub'}
                         </div>
-                        <p className="text-[11px] text-slate-700">
+                        <p className="text-slate-600 text-[11px]">
                           {fixSuccess.type === 'commit' 
-                            ? (fixSuccess.isSandbox 
-                                ? `The finding '${vuln.title}' has been marked as resolved with the verified security patch. (To push direct commits to your GitHub account, configure a Personal Access Token with repo scope in User Settings).`
-                                : `The file '${vuln.filePath}' has been patched and committed directly to branch '${fixSuccess.branch || 'main'}'.`)
-                            : (fixSuccess.isSandbox
-                                ? `A Pull Request proposal has been created and the finding marked active. (To open PRs directly on GitHub, configure a Personal Access Token in User Settings).`
-                                : `A new branch and Pull Request has been opened on GitHub for code review.`)}
+                            ? `The file '${vuln.filePath}' has been patched and committed.` 
+                            : `A new branch and Pull Request has been opened for code review.`}
                         </p>
                         <a
                           href={fixSuccess.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block text-xs font-semibold bg-[#1976d2] text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="inline-block text-xs font-medium bg-slate-950 text-white px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors"
                         >
-                          {fixSuccess.type === 'commit' ? 'View Code on GitHub' : 'View Pull Requests'}
+                          {fixSuccess.type === 'commit' ? 'View commit on GitHub' : 'View Pull Request'}
                         </a>
                       </div>
                     )}
 
                     {pushError && (
-                      <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-xl space-y-1">
-                        <p className="text-xs font-bold uppercase">Fix Update Failed</p>
+                      <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-lg space-y-1 text-xs">
+                        <p className="font-semibold">Unable to push fix</p>
                         <p className="text-[11px] text-slate-700">{pushError}</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-2 pt-2">
-                    <div className="flex flex-col sm:flex-row gap-2.5">
-                      {/* Direct Push Button */}
+                  <div className="space-y-2 pt-1">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={handlePushDirectFix}
                         disabled={pushingMode !== null || vuln.status === 'resolved'}
-                        className="flex-1 github-btn-primary disabled:opacity-50 font-bold py-2.5 px-3 text-xs transition-all cursor-pointer shadow-xs"
-                        title="Directly applies fix and commits to the default branch"
+                        className="flex-1 rounded-md bg-slate-950 text-white hover:bg-slate-800 disabled:opacity-50 font-medium py-2 px-3 text-xs transition-all cursor-pointer shadow-xs"
                       >
-                        {pushingMode === 'commit' ? 'COMMITTING TO REPO...' : 'PUSH FIX DIRECTLY'}
+                        {pushingMode === 'commit' ? 'Applying Fix…' : 'Push Fix Directly'}
                       </button>
 
-                      {/* Pull Request Button */}
                       <button
                         onClick={handlePushPR}
                         disabled={pushingMode !== null || vuln.status === 'resolved'}
-                        className="github-btn-secondary disabled:opacity-50 font-bold py-2.5 px-3 text-xs transition-all cursor-pointer"
-                        title="Creates a new branch and opens a Pull Request"
+                        className="rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 disabled:opacity-50 font-medium py-2 px-3 text-xs transition-all cursor-pointer shadow-2xs"
                       >
-                        {pushingMode === 'pr' ? 'CREATING PR...' : 'CREATE PULL REQUEST'}
+                        {pushingMode === 'pr' ? 'Opening PR…' : 'Create Pull Request'}
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
                       <button 
                         onClick={() => onStatusUpdate(vuln.status === 'resolved' ? 'open' : 'resolved')}
-                        className="text-[11px] text-slate-500 hover:text-[#1976d2] uppercase font-semibold underline cursor-pointer"
+                        className="text-[11px] text-slate-500 hover:text-slate-900 font-medium underline cursor-pointer"
                       >
-                        {vuln.status === 'resolved' ? 'Re-open finding' : 'Manually Mark as Resolved'}
+                        {vuln.status === 'resolved' ? 'Re-open issue' : 'Mark as resolved manually'}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Code Fix Patch View */}
-                <div className="border border-slate-200 bg-white rounded-xl p-4 space-y-2 flex flex-col justify-between shadow-xs">
+                <div className="border border-slate-200 bg-white rounded-lg p-4 space-y-2 flex flex-col justify-between shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-bold text-slate-800 uppercase">
-                      RECOMMENDED CODE FIX PATCH
+                    <h5 className="text-xs font-semibold text-slate-950 uppercase tracking-wider">
+                      Recommended Code Patch
                     </h5>
                     <button
                       onClick={handleCopyFix}
-                      className="text-[11px] bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer"
+                      className="text-xs bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer"
                     >
-                      {copied ? 'COPIED' : 'COPY CODE'}
+                      {copied ? 'Copied' : 'Copy Code'}
                     </button>
                   </div>
                   
-                  <div className="border border-slate-200 bg-slate-900 rounded-xl p-3 text-xs text-slate-100 font-mono max-h-72 overflow-y-auto shadow-inner">
+                  <div className="border border-slate-200 bg-slate-950 rounded-lg p-3 text-xs text-slate-100 font-mono max-h-72 overflow-y-auto">
                     <ReactMarkdown>{`\`\`\`typescript\n${vuln.fix || vuln.remediation}\n\`\`\``}</ReactMarkdown>
                   </div>
 
                   <p className="text-[11px] text-slate-500 font-sans">
-                    Click "Push Fix Directly" to update this file automatically, or copy and paste the patch into your local workspace.
+                    Click "Push Fix Directly" to commit this patch, or copy and paste it into your local editor.
                   </p>
                 </div>
               </div>
