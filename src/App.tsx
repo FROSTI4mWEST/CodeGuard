@@ -140,46 +140,72 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f7fa] text-slate-800 font-sans flex flex-col justify-between selection:bg-[#1976d2] selection:text-white">
-      {/* Top Application Header - Clean Material Blue */}
-      <header className="bg-[#1976d2] px-6 py-3.5 sticky top-0 z-50 flex items-center justify-between text-white shadow-md">
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 font-sans flex flex-col justify-between selection:bg-slate-900 selection:text-white">
+      {/* Top Application Header */}
+      <header className="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-50 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-6">
           <div 
             onClick={() => { setActiveTab('dashboard'); setSelectedRepoId(null); }}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <Github className="w-5 h-5 text-white" />
-            <span className="font-bold text-base sm:text-lg tracking-wider text-white uppercase flex items-center gap-2">
-              CODEGUARD
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-950 text-white shadow-xs">
+              <Github className="w-4 h-4" />
+            </div>
+            <span className="font-bold text-base tracking-tight text-slate-950">
+              CodeGuard
             </span>
           </div>
+
+          {/* Desktop Nav in Header */}
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-lg border border-slate-200/60">
+            <NavTab 
+              active={activeTab === 'dashboard' && !selectedRepoId} 
+              onClick={() => { setActiveTab('dashboard'); setSelectedRepoId(null); }}
+              label="Dashboard"
+            />
+            <NavTab 
+              active={activeTab === 'network' || selectedRepoId !== null} 
+              onClick={() => setActiveTab('network')}
+              label="Repositories"
+            />
+            <NavTab 
+              active={activeTab === 'decrypt'} 
+              onClick={() => setActiveTab('decrypt')}
+              label="Policies"
+            />
+            <NavTab 
+              active={activeTab === 'terminal'} 
+              onClick={() => setActiveTab('terminal')}
+              label="Terminal"
+              icon={<Terminal className="w-3.5 h-3.5" />}
+            />
+          </nav>
         </div>
 
-        {/* User Status & Account Settings Bar */}
-        <div className="flex items-center gap-3">
+        {/* User Account Settings */}
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg text-xs transition-colors group cursor-pointer text-white font-medium"
-            title="Open Account Settings"
+            className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-slate-800 shadow-2xs font-medium"
+            title="Account Settings"
           >
             {profile?.photoURL ? (
-              <img src={profile.photoURL} alt="" className="w-5 h-5 rounded-full border border-white/40 object-cover" />
+              <img src={profile.photoURL} alt="" className="w-5 h-5 rounded-full border border-slate-300 object-cover" />
             ) : (
-              <div className="w-5 h-5 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-[10px] font-bold text-white">
+              <div className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
                 {profile?.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
               </div>
             )}
-            <span className="max-w-[120px] sm:max-w-[180px] truncate">
+            <span className="max-w-[120px] sm:max-w-[160px] truncate">
               {profile?.displayName || user.displayName || user.email?.split('@')[0] || 'Developer'}
             </span>
-            <span className="text-white/80 text-[11px] ml-1 uppercase font-semibold">Settings</span>
           </button>
         </div>
       </header>
 
-      {/* Navigation Sub-Bar */}
-      <div className="bg-[#f0f4f8] border-b border-slate-200 px-4 sm:px-6 py-1 flex items-center justify-between overflow-x-auto">
-        <nav className="flex items-center gap-1 sm:gap-2">
+      {/* Mobile Nav Sub-Bar */}
+      <div className="md:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center overflow-x-auto">
+        <nav className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg w-full">
           <NavTab 
             active={activeTab === 'dashboard' && !selectedRepoId} 
             onClick={() => { setActiveTab('dashboard'); setSelectedRepoId(null); }}
@@ -188,38 +214,32 @@ export default function App() {
           <NavTab 
             active={activeTab === 'network' || selectedRepoId !== null} 
             onClick={() => setActiveTab('network')}
-            label="My Repositories"
-            icon={<Github className="w-3.5 h-3.5" />}
+            label="Repositories"
           />
           <NavTab 
             active={activeTab === 'decrypt'} 
             onClick={() => setActiveTab('decrypt')}
-            label="Security Policies"
+            label="Policies"
           />
           <NavTab 
             active={activeTab === 'terminal'} 
             onClick={() => setActiveTab('terminal')}
-            label="CLI Terminal"
-            icon={<Terminal className="w-3.5 h-3.5" />}
+            label="Terminal"
           />
         </nav>
-        <div className="hidden md:flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span>SAST Engine Online</span>
-        </div>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
-            <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full">
+            <motion.div key="dashboard" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full">
               <Dashboard onRepoSelect={(id) => { setSelectedRepoId(id); setActiveTab('network'); }} />
             </motion.div>
           )}
 
           {activeTab === 'network' && (
-            <motion.div key="network" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full">
+            <motion.div key="network" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full">
               {!selectedRepoId ? (
                 <Dashboard onRepoSelect={(id) => setSelectedRepoId(id)} />
               ) : (
@@ -229,13 +249,13 @@ export default function App() {
           )}
 
           {activeTab === 'decrypt' && (
-            <motion.div key="decrypt" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full">
+            <motion.div key="decrypt" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full">
               <PolicyManager />
             </motion.div>
           )}
 
           {activeTab === 'terminal' && (
-            <motion.div key="terminal" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full max-w-5xl mx-auto">
+            <motion.div key="terminal" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="w-full max-w-5xl mx-auto">
               <TerminalConsole 
                 onNavigate={(t) => {
                   if (t === 'network') setActiveTab('network');
@@ -251,11 +271,9 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white px-6 py-3.5 text-xs text-slate-500 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-slate-700">User Terms and Policy</span>
-        </div>
-        <span className="hidden sm:inline text-slate-400">OWASP Top 10 • SAST & PR Automated Remediations</span>
+      <footer className="border-t border-slate-200 bg-white px-6 py-3 text-xs text-slate-500 flex justify-between items-center">
+        <span className="font-medium text-slate-700">CodeGuard Security</span>
+        <span className="text-slate-400">SAST & Live Security Auditing</span>
       </footer>
 
       {/* User Account Settings Popup Modal */}
@@ -278,10 +296,10 @@ function NavTab({ active, onClick, label, icon }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className={`px-3.5 py-2 rounded-md text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border-b-2 ${
+      className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
         active 
-          ? 'border-[#1976d2] text-[#1976d2] bg-white shadow-xs' 
-          : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+          ? 'bg-white text-slate-950 shadow-2xs font-semibold' 
+          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
       }`}
     >
       {icon}

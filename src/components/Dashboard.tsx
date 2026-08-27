@@ -212,18 +212,33 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Security targets</h2>
-          <p className="text-slate-500 text-xs mt-1">Monitor repository code and public live applications from one workspace.</p>
+          <h2 className="text-xl font-bold tracking-tight text-slate-950">Security Targets</h2>
+          <p className="text-slate-500 text-xs mt-0.5">Continuous security monitoring for repositories and live web applications.</p>
         </div>
-        <div className="flex gap-2"><button onClick={() => { setShowAddModal(true); setModalTab('live_url'); }} className="border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50"><Globe2 className="mr-1.5 inline h-3.5 w-3.5" />LIVE URL SCAN</button><button onClick={() => { setShowAddModal(true); setModalTab('my_repos'); }} className="bg-[#1976d2] px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#1565c0]"><Plus className="mr-1.5 inline h-3.5 w-3.5" />ADD REPOSITORY</button></div>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => { setShowAddModal(true); setModalTab('live_url'); }} 
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            <Globe2 className="h-3.5 w-3.5 text-slate-500" />
+            <span>Scan Live URL</span>
+          </button>
+          <button 
+            onClick={() => { setShowAddModal(true); setModalTab('my_repos'); }} 
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-3.5 py-2 text-xs font-medium text-white shadow-xs hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add Repository</span>
+          </button>
+        </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="YOUR REPOS" value={repos.length.toString()} />
-        <StatCard label="CRITICAL RISKS" value={criticalIssues.toString()} />
-        <StatCard label="AVG HEALTH" value={repos.length > 0 ? (repos.reduce((a, b) => a + (b.healthScore || 0), 0) / repos.length).toFixed(0) + '%' : '--'} />
-        <StatCard label="COMPLIANT" value={repos.filter(r => (r.healthScore || 0) >= 90).length.toString()} />
+        <StatCard label="Repositories" value={repos.length.toString()} />
+        <StatCard label="Critical Findings" value={criticalIssues.toString()} />
+        <StatCard label="Average Health" value={repos.length > 0 ? (repos.reduce((a, b) => a + (b.healthScore || 0), 0) / repos.length).toFixed(0) + '%' : '--'} />
+        <StatCard label="Passing Targets" value={repos.filter(r => (r.healthScore || 0) >= 90).length.toString()} />
       </div>
 
       {/* Vulnerability Density Map */}
@@ -353,50 +368,54 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-white border border-slate-300 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden font-sans max-h-[90vh] flex flex-col"
+              className="relative bg-white border border-slate-200 w-full max-w-xl rounded-2xl shadow-xl overflow-hidden font-sans max-h-[90vh] flex flex-col"
             >
               {/* Header */}
-              <div className="px-6 py-3.5 bg-[#1976d2] flex items-center justify-between shrink-0 text-white">
+              <div className="px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
                 <div>
-                  <h3 className="font-bold text-white uppercase text-sm tracking-wider">
-                    CODEGUARD
+                  <h3 className="font-semibold text-slate-950 text-sm">
+                    Connect Security Target
                   </h3>
+                  <p className="text-slate-500 text-xs mt-0.5">Select a GitHub repository or scan a live website URL.</p>
                 </div>
                 <button 
                   onClick={() => setShowAddModal(false)} 
-                  className="text-white/80 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded-md hover:bg-white/10 text-xs font-bold"
+                  className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-1 rounded-md hover:bg-slate-100 text-xs font-medium"
                 >
-                  CLOSE
+                  Close
                 </button>
               </div>
 
               {/* Navigation Tabs */}
-              <div className="flex border-b border-slate-200 bg-[#f0f4f8] shrink-0 text-xs font-semibold">
-                <button
-                  onClick={() => setModalTab('my_repos')}
-                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-                    modalTab === 'my_repos'
-                      ? 'border-[#1976d2] text-[#1976d2] bg-white'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Github className="w-3.5 h-3.5" />
-                  <span>My GitHub Repositories</span>
-                </button>
-                <button
-                  onClick={() => setModalTab('live_url')}
-                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-                    modalTab === 'live_url'
-                      ? 'border-[#1976d2] text-[#1976d2] bg-white'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Globe2 className="w-3.5 h-3.5" /> Live URL Scan
-                </button>
+              <div className="px-6 pt-3 pb-1 border-b border-slate-100 bg-white shrink-0">
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg text-xs font-medium">
+                  <button
+                    onClick={() => setModalTab('my_repos')}
+                    className={`flex-1 py-1.5 px-3 flex items-center justify-center gap-2 rounded-md transition-all cursor-pointer ${
+                      modalTab === 'my_repos'
+                        ? 'bg-white text-slate-950 shadow-2xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                    <span>My Repositories</span>
+                  </button>
+                  <button
+                    onClick={() => setModalTab('live_url')}
+                    className={`flex-1 py-1.5 px-3 flex items-center justify-center gap-2 rounded-md transition-all cursor-pointer ${
+                      modalTab === 'live_url'
+                        ? 'bg-white text-slate-950 shadow-2xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Globe2 className="w-3.5 h-3.5" /> 
+                    <span>Live URL Scan</span>
+                  </button>
+                </div>
               </div>
 
               {/* Body */}
-              <div className="p-5 space-y-4 overflow-y-auto flex-1 bg-[#f4f7fa]">
+              <div className="p-5 space-y-4 overflow-y-auto flex-1 bg-slate-50/50">
                 {error && (
                   <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-lg text-xs">
                     <span>{error}</span>

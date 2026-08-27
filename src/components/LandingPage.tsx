@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Github, Chrome, Terminal } from 'lucide-react';
+import { Github, Chrome, Shield, Terminal, ArrowRight, CheckCircle2, Lock, FileCode, Zap } from 'lucide-react';
 
 interface LandingPageProps {
   onLogin: (provider: 'github' | 'google') => void;
@@ -14,104 +14,104 @@ export function LandingPage({ onLogin, authError, onClearError }: LandingPagePro
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7fa] text-slate-800 font-sans flex flex-col justify-between selection:bg-[#1976d2] selection:text-white">
-      {/* Navigation Header */}
-      <header className="bg-[#1976d2] px-6 py-4 sticky top-0 z-50 flex items-center justify-between text-white shadow-md">
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-lg tracking-wider text-white uppercase flex items-center gap-2">
-            CodeGuard <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/20 text-white uppercase">v1.0</span>
+    <div className="min-h-screen bg-white text-slate-900 font-sans flex flex-col justify-between selection:bg-slate-900 selection:text-white">
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md px-6 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-950 text-white shadow-xs">
+            <Shield className="h-4 w-4" />
+          </div>
+          <span className="font-semibold text-base tracking-tight text-slate-950">
+            CodeGuard
+          </span>
+          <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+            v2.0
           </span>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => onLogin('github')}
-            className="bg-white hover:bg-slate-100 text-[#1976d2] font-bold px-3.5 py-1.5 rounded-lg text-xs transition-all flex items-center gap-2 shadow-xs cursor-pointer"
+            onClick={() => onLogin('google')}
+            className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            <Github className="w-4 h-4" />
-            <span>GITHUB LOGIN</span>
+            <Chrome className="h-3.5 w-3.5" />
+            <span>Google</span>
           </button>
           <button
-            onClick={() => onLogin('google')}
-            className="border border-white/40 hover:bg-white/10 text-white font-semibold px-3.5 py-1.5 rounded-lg text-xs transition-all flex items-center gap-2 cursor-pointer"
+            onClick={() => onLogin('github')}
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-3.5 py-1.5 text-xs font-medium text-white shadow-xs hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            <Chrome className="w-4 h-4" />
-            <span>GOOGLE</span>
+            <Github className="h-3.5 w-3.5" />
+            <span>Sign in with GitHub</span>
           </button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="my-auto py-16 px-6 max-w-5xl mx-auto text-center space-y-10">
+      {/* Main Content */}
+      <main className="my-auto py-16 px-6 max-w-5xl mx-auto text-center space-y-12">
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-6"
+          transition={{ duration: 0.4 }}
+          className="space-y-5"
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-semibold text-[#1976d2] uppercase tracking-wider">
-            <Terminal className="w-3.5 h-3.5" />
-            <span>AUTOMATED CODE SECURITY & VULNERABILITY AUDITING</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span>Automated security auditing for repositories & live URLs</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900 leading-tight">
-            Automated Code Auditing & <br className="hidden sm:block" />
-            <span className="text-[#1976d2]">
-              Repository Security
-            </span>
+          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-slate-950 max-w-3xl mx-auto leading-[1.12]">
+            Find vulnerabilities before they reach production.
           </h1>
 
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-600 leading-relaxed">
-            Continuous vulnerability scanning for your GitHub repositories. Detect security flaws, enforce OWASP compliance, and generate automated pull request fixes.
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+            Continuous static analysis for your GitHub repositories and external live URL auditing. Get actionable remediation guidance and automated fixes.
           </p>
         </motion.div>
 
-        {/* Error / Popup Blocked Alert Box */}
+        {/* Auth Error Banner */}
         {authError && (
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="border border-red-200 bg-red-50 rounded-xl p-5 text-left max-w-xl mx-auto space-y-3"
+            className="border border-red-200 bg-red-50/70 rounded-xl p-4 text-left max-w-xl mx-auto space-y-2.5 text-xs text-red-700"
           >
-            <div className="flex items-center gap-3 text-red-700">
-              <h3 className="font-bold text-xs uppercase tracking-wider">
-                {authError === 'POPUP_BLOCKED' 
-                  ? 'AUTHENTICATION POPUP BLOCKED' 
-                  : authError === 'ACCOUNT_EXISTS_DIFFERENT_CREDENTIAL'
-                  ? 'ACCOUNT EXISTS WITH DIFFERENT PROVIDER'
-                  : 'AUTHENTICATION NOTICE'}
-              </h3>
+            <div className="font-semibold text-slate-900">
+              {authError === 'POPUP_BLOCKED' 
+                ? 'Authentication popup was blocked' 
+                : authError === 'ACCOUNT_EXISTS_DIFFERENT_CREDENTIAL'
+                ? 'Account exists with another login provider'
+                : 'Authentication notice'}
             </div>
             
-            <p className="text-xs text-red-600 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed">
               {authError === 'POPUP_BLOCKED' 
-                ? 'Your browser or iframe preview blocked the GitHub authentication popup. Please click below to open CodeGuard in a new tab to complete sign in.' 
+                ? 'Your browser blocked the login popup window. Click below to open CodeGuard in a full tab.' 
                 : authError === 'ACCOUNT_EXISTS_DIFFERENT_CREDENTIAL'
-                ? 'An account already exists with the email linked to your GitHub account using Google or Email login. Please sign in with Google or enable "Allow multiple accounts with the same email" in your Firebase Console Settings.'
+                ? 'An account already exists with this email address. Please sign in with Google or your existing login method.'
                 : authError}
             </p>
 
-            <div className="flex flex-wrap gap-3 pt-2">
+            <div className="flex flex-wrap gap-2 pt-1">
               {authError === 'ACCOUNT_EXISTS_DIFFERENT_CREDENTIAL' ? (
                 <button
                   onClick={() => { onClearError?.(); onLogin('google'); }}
-                  className="bg-[#1976d2] text-white font-bold px-4 py-2 rounded-lg text-xs uppercase flex items-center gap-2 hover:bg-[#1565c0] transition-colors cursor-pointer shadow-xs"
+                  className="rounded-lg bg-slate-950 px-3.5 py-1.5 font-medium text-white text-xs hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  <Chrome className="w-4 h-4" />
-                  <span>Sign In With Google</span>
+                  Sign in with Google
                 </button>
               ) : (
                 <button
                   onClick={openInNewTab}
-                  className="bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-xs uppercase flex items-center gap-2 hover:bg-red-700 transition-colors cursor-pointer shadow-xs"
+                  className="rounded-lg bg-slate-950 px-3.5 py-1.5 font-medium text-white text-xs hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  <span>Open App in New Tab</span>
+                  Open in New Tab
                 </button>
               )}
               {onClearError && (
                 <button
                   onClick={onClearError}
-                  className="border border-slate-300 bg-white text-slate-700 font-medium px-4 py-2 rounded-lg text-xs uppercase hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 text-xs hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   Dismiss
                 </button>
@@ -120,93 +120,101 @@ export function LandingPage({ onLogin, authError, onClearError }: LandingPagePro
           </motion.div>
         )}
 
-        {/* Primary CTA */}
+        {/* Primary Action Buttons */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
+          transition={{ delay: 0.15 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1"
         >
           <button
             onClick={() => onLogin('github')}
-            className="w-full sm:w-auto bg-[#1976d2] hover:bg-[#1565c0] text-white font-bold py-3.5 px-7 rounded-xl text-sm flex items-center justify-center gap-2.5 shadow-md transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-lg bg-slate-950 px-6 py-3 text-sm font-semibold text-white shadow-xs hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            <Github className="w-5 h-5" />
-            <span>CONNECT WITH GITHUB</span>
+            <Github className="w-4 h-4" />
+            <span>Connect with GitHub</span>
+            <ArrowRight className="w-4 h-4 text-slate-400" />
           </button>
           <button
             onClick={() => onLogin('google')}
-            className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 font-bold py-3.5 px-6 rounded-xl text-sm flex items-center justify-center gap-2 border border-slate-300 shadow-xs transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-2xs hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            <Chrome className="w-5 h-5" />
-            <span>CONNECT WITH GOOGLE</span>
+            <Chrome className="w-4 h-4" />
+            <span>Sign in with Google</span>
           </button>
         </motion.div>
 
-        {/* Mock Code Preview Box */}
+        {/* Minimal Code & Finding Preview */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="border border-slate-200 bg-white rounded-xl shadow-md overflow-hidden text-left max-w-3xl mx-auto font-mono text-xs"
+          transition={{ delay: 0.25 }}
+          className="border border-slate-200 bg-white rounded-xl shadow-xs overflow-hidden text-left max-w-2xl mx-auto"
         >
-          <div className="bg-[#f8fafc] px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <Terminal className="w-3.5 h-3.5 text-slate-500 ml-1" />
-              <span className="text-slate-600 text-[11px]">codeguard-scan-report.json</span>
+          <div className="bg-slate-50/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2 font-mono text-xs text-slate-600">
+              <Terminal className="w-3.5 h-3.5 text-slate-500" />
+              <span>findings/query.ts:42</span>
             </div>
-            <span className="text-emerald-600 font-bold text-[10px] uppercase">STATUS: ACTIVE</span>
+            <span className="rounded border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+              HIGH SEVERITY
+            </span>
           </div>
 
-          <div className="p-5 space-y-3 bg-white leading-relaxed text-slate-800">
-            <div className="text-red-600 font-bold">
-              CRITICAL: Unsanitized input in API route `/api/query` (CWE-89 SQL Injection)
-            </div>
-            <p className="text-slate-500 text-[11px]">
-              Source file: <span className="text-[#1976d2] font-semibold underline">src/routes/search.ts:42</span> — User parameters passed directly to SQL query string.
+          <div className="p-4 space-y-2.5 font-mono text-xs">
+            <p className="text-slate-900 font-medium font-sans">
+              Unsanitized SQL query parameter detected
             </p>
-            <div className="bg-slate-900 text-slate-100 rounded-lg p-3 text-[11px] space-y-1">
-              <p className="text-slate-400">// CodeGuard Automated Patch Recommendation:</p>
-              <p className="text-red-400">{`- const result = await db.query(\`SELECT * FROM users WHERE id = '\${req.query.id}'\`);`}</p>
-              <p className="text-emerald-400">{`+ const result = await db.query('SELECT * FROM users WHERE id = $1', [req.query.id]);`}</p>
+            <div className="rounded-lg bg-slate-950 p-3 text-slate-100 space-y-1 overflow-x-auto text-[11px]">
+              <p className="text-slate-400">// Remediation Diff</p>
+              <p className="text-red-400">{`- const user = await db.query(\`SELECT * FROM users WHERE id = '\${id}'\`);`}</p>
+              <p className="text-emerald-400">{`+ const user = await db.query('SELECT * FROM users WHERE id = $1', [id]);`}</p>
             </div>
           </div>
         </motion.div>
 
         {/* Feature Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 text-left">
-          <div className="border border-slate-200 bg-white p-6 rounded-xl space-y-2 shadow-xs hover:border-[#1976d2] transition-colors">
-            <h3 className="font-bold text-slate-900 text-base">Automated SAST Scanning</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 text-left">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-2 shadow-2xs hover:border-slate-300 transition-colors">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-900">
+              <FileCode className="h-4 w-4" />
+            </div>
+            <h3 className="font-semibold text-slate-950 text-sm">Static Code Analysis</h3>
             <p className="text-slate-600 text-xs leading-relaxed">
-              Scan source code and dependency manifests against OWASP standards, CWE patterns, and known security flaws.
+              Scans your source files and manifests for OWASP Top 10 vulnerabilities, injection flaws, and exposed credentials.
             </p>
           </div>
 
-          <div className="border border-slate-200 bg-white p-6 rounded-xl space-y-2 shadow-xs hover:border-[#1976d2] transition-colors">
-            <h3 className="font-bold text-slate-900 text-base">One-Click PR Fixes</h3>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-2 shadow-2xs hover:border-slate-300 transition-colors">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-900">
+              <Lock className="h-4 w-4" />
+            </div>
+            <h3 className="font-semibold text-slate-950 text-sm">Live URL & TLS Audit</h3>
             <p className="text-slate-600 text-xs leading-relaxed">
-              Generate precise code remediation patches and automatically push Pull Requests directly to your GitHub repository.
+              External inspection of TLS certificates, DNS posture (SPF/DMARC/CAA), security headers, and open paths.
             </p>
           </div>
 
-          <div className="border border-slate-200 bg-white p-6 rounded-xl space-y-2 shadow-xs hover:border-[#1976d2] transition-colors">
-            <h3 className="font-bold text-slate-900 text-base">Security Policy Rules</h3>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-2 shadow-2xs hover:border-slate-300 transition-colors">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-900">
+              <Zap className="h-4 w-4" />
+            </div>
+            <h3 className="font-semibold text-slate-950 text-sm">Automated PR Fixes</h3>
             <p className="text-slate-600 text-xs leading-relaxed">
-              Define custom compliance policies, track repository health scores, and enforce CI/CD guardrails.
+              Generate ready-to-merge patches and push pull requests directly to your repository with one click.
             </p>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Clean Minimal Footer */}
       <footer className="border-t border-slate-200 bg-white px-6 py-4 text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <div>
-          <span className="font-bold text-slate-800">User Terms and Policy</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-slate-800">CodeGuard Security</span>
+          <span>·</span>
+          <span>Automated Vulnerability Scanner</span>
         </div>
-        <span className="text-[11px] text-slate-400">Continuous Repository Vulnerability Auditing</span>
+        <span className="text-[11px] text-slate-400">All rights reserved</span>
       </footer>
     </div>
   );

@@ -440,70 +440,43 @@ export function RepoAudit({ repoId, onBack }: { repoId: string | null, onBack: (
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search vulnerabilities by title, file, or category..."
-                  className="w-full bg-[#f8fafc] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#1976d2] focus:bg-white transition-all font-sans"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-slate-400 focus:bg-white transition-all font-sans"
                 />
               </div>
 
               {/* Severity Filter Pills */}
               <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100">
-                <span className="text-[11px] text-slate-500 font-bold uppercase mr-1">SEVERITY:</span>
+                <span className="text-[11px] text-slate-400 font-semibold uppercase mr-1">Severity:</span>
                 <FilterButton active={severityFilter === 'all'} onClick={() => setSeverityFilter('all')}>
-                  ALL ({vulnerabilities.length})
+                  All ({vulnerabilities.length})
                 </FilterButton>
                 <FilterButton active={severityFilter === 'critical'} onClick={() => setSeverityFilter(severityFilter === 'critical' ? 'all' : 'critical')}>
-                  <span className="text-red-600">CRITICAL ({vulnerabilities.filter(v => v.severity === 'critical').length})</span>
+                  <span className="text-red-600">Critical ({vulnerabilities.filter(v => v.severity === 'critical').length})</span>
                 </FilterButton>
                 <FilterButton active={severityFilter === 'high'} onClick={() => setSeverityFilter(severityFilter === 'high' ? 'all' : 'high')}>
-                  <span className="text-amber-600">HIGH ({vulnerabilities.filter(v => v.severity === 'high').length})</span>
+                  <span className="text-amber-600">High ({vulnerabilities.filter(v => v.severity === 'high').length})</span>
                 </FilterButton>
                 <FilterButton active={severityFilter === 'medium'} onClick={() => setSeverityFilter(severityFilter === 'medium' ? 'all' : 'medium')}>
-                  <span className="text-blue-600">MEDIUM ({vulnerabilities.filter(v => v.severity === 'medium').length})</span>
+                  <span className="text-blue-600">Medium ({vulnerabilities.filter(v => v.severity === 'medium').length})</span>
                 </FilterButton>
                 <FilterButton active={severityFilter === 'low'} onClick={() => setSeverityFilter(severityFilter === 'low' ? 'all' : 'low')}>
-                  <span className="text-slate-600">LOW ({vulnerabilities.filter(v => v.severity === 'low').length})</span>
-                </FilterButton>
-              </div>
-
-              {/* Status Filter Pills */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100">
-                <span className="text-[11px] text-slate-500 font-bold uppercase mr-1">STATUS:</span>
-                <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>ALL</FilterButton>
-                <FilterButton active={filter === 'open'} onClick={() => setFilter('open')}>OPEN</FilterButton>
-                <FilterButton active={filter === 'in-progress'} onClick={() => setFilter('in-progress')}>ACTIVE</FilterButton>
-                <FilterButton active={filter === 'resolved'} onClick={() => setFilter('resolved')}>FIXED</FilterButton>
-              </div>
-
-              {/* Evidence Verification Filter Pills */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100">
-                <span className="text-[11px] text-slate-500 font-bold uppercase mr-1">EVIDENCE:</span>
-                <FilterButton active={evidenceFilter === 'all'} onClick={() => setEvidenceFilter('all')}>
-                  ALL ({vulnerabilities.length})
-                </FilterButton>
-                <FilterButton active={evidenceFilter === 'confirmed'} onClick={() => setEvidenceFilter(evidenceFilter === 'confirmed' ? 'all' : 'confirmed')}>
-                  <span className="text-emerald-700">
-                    CONFIRMED ({vulnerabilities.filter(v => v.evidenceStatus === 'CONFIRMED' || v.verified).length})
-                  </span>
-                </FilterButton>
-                <FilterButton active={evidenceFilter === 'unconfirmed'} onClick={() => setEvidenceFilter(evidenceFilter === 'unconfirmed' ? 'all' : 'unconfirmed')}>
-                  <span className="text-amber-600">
-                    UNCONFIRMED ({vulnerabilities.filter(v => v.evidenceStatus === 'UNCONFIRMED' || !v.verified).length})
-                  </span>
+                  <span className="text-slate-600">Low ({vulnerabilities.filter(v => v.severity === 'low').length})</span>
                 </FilterButton>
               </div>
             </div>
 
             {(selectedScanId !== 'all' || severityFilter !== 'all') && (
-              <div className="p-2.5 rounded-lg border border-blue-200 bg-blue-50 flex items-center justify-between text-xs text-[#1976d2]">
+              <div className="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-700">
                 <span className="flex items-center gap-2">
-                  ACTIVE FILTERS: 
-                  {selectedScanId !== 'all' && <span className="font-bold">SCAN: {scans.find(s => s.id === selectedScanId) ? formatScanDate(scans.find(s => s.id === selectedScanId)?.createdAt) : selectedScanId}</span>}
-                  {severityFilter !== 'all' && <span className="font-bold uppercase">SEVERITY: {severityFilter}</span>}
+                  <span className="font-medium">Filtered by:</span> 
+                  {selectedScanId !== 'all' && <span className="font-semibold">Scan: {scans.find(s => s.id === selectedScanId) ? formatScanDate(scans.find(s => s.id === selectedScanId)?.createdAt) : selectedScanId}</span>}
+                  {severityFilter !== 'all' && <span className="font-semibold uppercase">{severityFilter}</span>}
                 </span>
                 <button 
                   onClick={() => { setSelectedScanId('all'); setSeverityFilter('all'); }} 
-                  className="text-[#1976d2] hover:underline text-xs font-semibold cursor-pointer"
+                  className="text-slate-900 hover:underline text-xs font-semibold cursor-pointer"
                 >
-                  CLEAR FILTERS
+                  Clear Filters
                 </button>
               </div>
             )}
@@ -893,10 +866,10 @@ function FilterButton({ active, children, onClick }: { active: boolean, children
   return (
     <button 
       onClick={onClick}
-      className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap border cursor-pointer ${
+      className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap border cursor-pointer ${
         active 
-          ? 'bg-[#1976d2] text-white border-[#1976d2] shadow-xs' 
-          : 'bg-[#f8fafc] text-slate-600 border-slate-200 hover:text-[#1976d2] hover:border-blue-300 hover:bg-blue-50/50'
+          ? 'bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold' 
+          : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50'
       }`}
     >
       {children}

@@ -132,29 +132,15 @@ export function LiveUrlScanner() {
     : [];
 
   return (
-    <div className="space-y-5 font-sans">
-      {/* Informational Hero Banner */}
-      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
-        <div className="flex gap-3">
-          <div className="mt-0.5 rounded-lg bg-white p-2 text-[#1976d2] shadow-xs">
-            <Globe2 className="h-4 w-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-slate-900">
-              Live Target Security Audit
-            </h4>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              Deep external audit evaluating TLS certificates, DNS & email posture (SPF/DMARC/CAA), security response headers, cookie flags, sensitive directory exposure, and tech stack signatures.
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-4 font-sans">
       {/* Target URL Input Form */}
       <form onSubmit={scan} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
-          Public Target Domain or URL
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-slate-900">
+            Public Website or Domain
+          </label>
+          <span className="text-[11px] text-slate-400">TLS, DNS Posture, Headers & Endpoints</span>
+        </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
             value={url}
@@ -162,19 +148,19 @@ export function LiveUrlScanner() {
             required
             placeholder="https://app.example.com or example.com"
             inputMode="url"
-            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3.5 py-2.5 font-mono text-xs text-slate-800 outline-none transition-colors focus:border-[#1976d2] focus:ring-1 focus:ring-[#1976d2]"
+            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 font-mono text-xs text-slate-800 outline-none transition-colors focus:border-slate-400 focus:bg-white"
           />
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1976d2] px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-[#1565c0] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-xs font-medium text-white shadow-xs transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <ScanSearch className="h-3.5 w-3.5" />}
-            {loading ? 'AUDITING TARGET…' : 'RUN SECURITY SCAN'}
+            <span>{loading ? 'Auditing Target…' : 'Scan URL'}</span>
           </button>
         </div>
-        <p className="text-[10px] text-slate-500">
-          Private IP ranges, localhost, and cloud metadata targets are automatically blocked by SSRF defense filters.
+        <p className="text-[11px] text-slate-400">
+          Private IP ranges and localhost are blocked for safety.
         </p>
       </form>
 
