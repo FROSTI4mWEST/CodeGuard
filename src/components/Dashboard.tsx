@@ -3,11 +3,12 @@ import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
-import { Github, Terminal } from 'lucide-react';
+import { Github, Globe2, Plus } from 'lucide-react';
 import { type Repository } from '../types';
-import { fetchRepoMetadata, fetchUserRepositories, fetchPublicReposForUser } from '../lib/github';
+import { fetchUserRepositories, fetchPublicReposForUser } from '../lib/github';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { VulnerabilityDensityMap } from './VulnerabilityDensityMap';
+import { LiveUrlScanner } from './LiveUrlScanner';
 
 function formatDate(ts: any): string {
   if (!ts) return 'NEVER';
@@ -35,11 +36,7 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
   const [repos, setRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [modalTab, setModalTab] = useState<'my_repos' | 'custom_url'>('my_repos');
-  
-  // Custom URL state
-  const [repoUrl, setRepoUrl] = useState('');
-  const [adding, setAdding] = useState(false);
+  const [modalTab, setModalTab] = useState<'my_repos' | 'live_url'>('my_repos');
   const [error, setError] = useState<string | null>(null);
 
   // Auto-detected GitHub Repos State
@@ -160,10 +157,10 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
   };
 
   useEffect(() => {
-    if (showAddModal && ghRepos.length === 0) {
+    if (showAddModal && modalTab === 'my_repos' && ghRepos.length === 0) {
       loadUserGithubRepos();
     }
-  }, [showAddModal]);
+  }, [showAddModal, modalTab]);
 
   const handleImportGithubRepo = async (ghRepo: GitHubRepoItem) => {
     if (!auth.currentUser) return;
@@ -199,47 +196,6 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
     }
   };
 
-  const addRepository = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!auth.currentUser) return;
-    setAdding(true);
-    setError(null);
-
-    const path = 'repositories';
-    try {
-      const metadata = await fetchRepoMetadata(repoUrl);
-      
-      const newRepo = {
-        name: metadata.name,
-        owner: metadata.owner.login,
-        full_name: metadata.full_name,
-        url: metadata.html_url,
-        visibility: metadata.private ? 'private' : 'public',
-        createdAt: serverTimestamp(),
-        addedBy: auth.currentUser.uid,
-        healthScore: 100,
-      };
-
-      try {
-        const docRef = await addDoc(collection(db, path), newRepo);
-        setShowAddModal(false);
-        setRepoUrl('');
-        onRepoSelect(docRef.id);
-      } catch (fError) {
-        handleFirestoreError(fError, OperationType.CREATE, path);
-      }
-    } catch (err: any) {
-      if (err.message && err.message.includes('authInfo')) {
-        setError('Permission denied by security policy.');
-      } else {
-        setError('Could not add repository. Ensure the URL is correct and accessible.');
-      }
-      console.error(err);
-    } finally {
-      setAdding(false);
-    }
-  };
-
   const criticalIssues = repos.reduce((acc, repo) => acc + (repo.healthScore && repo.healthScore < 50 ? 1 : 0), 0);
 
   const filteredGhRepos = ghRepos.filter(r => 
@@ -252,20 +208,14 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-6xl mx-auto space-y-6 pb-12 font-sans"
+      className="max-w-7xl mx-auto space-y-6 pb-12 font-sans"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 uppercase">Repository Security Overview</h2>
-          <p className="text-slate-500 text-xs mt-1">Real-time security posture monitoring for your connected GitHub repositories.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Security targets</h2>
+          <p className="text-slate-500 text-xs mt-1">Monitor repository code and public live applications from one workspace.</p>
         </div>
-        <button
-          onClick={() => { setShowAddModal(true); setModalTab('my_repos'); }}
-          className="bg-[#1976d2] hover:bg-[#1565c0] text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
-        >
-          <Github className="w-4 h-4" />
-          <span>CONNECT REPOSITORY</span>
-        </button>
+        <div className="flex gap-2"><button onClick={() => { setShowAddModal(true); setModalTab('live_url'); }} className="border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50"><Globe2 className="mr-1.5 inline h-3.5 w-3.5" />LIVE URL SCAN</button><button onClick={() => { setShowAddModal(true); setModalTab('my_repos'); }} className="bg-[#1976d2] px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#1565c0]"><Plus className="mr-1.5 inline h-3.5 w-3.5" />ADD REPOSITORY</button></div>
       </div>
 
       {/* Quick Stats */}
@@ -322,7 +272,7 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
       <div className="border border-slate-200 bg-white rounded-xl shadow-xs overflow-hidden">
         <div className="px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between">
           <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            CONNECTED REPOSITORIES ({repos.length})
+            REPOSITORY TARGETS ({repos.length})
           </div>
           <span className="text-[11px] text-slate-500 font-medium">CODEGUARD SAST MONITORING</span>
         </div>
@@ -343,10 +293,10 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
                 <span>Auto-Detect My GitHub Repos</span>
               </button>
               <button 
-                onClick={() => { setShowAddModal(true); setModalTab('custom_url'); }} 
+                onClick={() => { setShowAddModal(true); setModalTab('live_url'); }} 
                 className="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs px-4 py-2 rounded-lg cursor-pointer shadow-xs transition-colors"
               >
-                Connect URL / Slug
+                Scan a Live URL
               </button>
             </div>
           </div>
@@ -434,14 +384,14 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
                   <span>My GitHub Repositories</span>
                 </button>
                 <button
-                  onClick={() => setModalTab('custom_url')}
+                  onClick={() => setModalTab('live_url')}
                   className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-                    modalTab === 'custom_url'
+                    modalTab === 'live_url'
                       ? 'border-[#1976d2] text-[#1976d2] bg-white'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Direct URL / Slug
+                  <Globe2 className="w-3.5 h-3.5" /> Live URL Scan
                 </button>
               </div>
 
@@ -607,46 +557,7 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
                       </div>
                     )}
                   </div>
-                ) : (
-                  /* Custom URL / Slug Form */
-                  <form onSubmit={addRepository} className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-xs">
-                    <p className="text-slate-600 text-xs leading-relaxed">
-                      Enter any public or private GitHub repository URL or slug (e.g. <span className="font-semibold text-[#1976d2]">facebook/react</span>).
-                    </p>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-slate-800 uppercase">Repository URL or Slug</label>
-                      <input 
-                        type="text" 
-                        value={repoUrl}
-                        onChange={(e) => setRepoUrl(e.target.value)}
-                        placeholder="e.g. facebook/react or https://github.com/owner/repo"
-                        className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#1976d2] focus:ring-1 focus:ring-[#1976d2] font-mono shadow-xs"
-                        required
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        Accepts GitHub URLs (<span className="text-[#1976d2]">https://github.com/owner/repo</span>) or repository paths (<span className="text-[#1976d2]">owner/repo</span>).
-                      </p>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                      <button 
-                        type="button" 
-                        onClick={() => setShowAddModal(false)}
-                        className="flex-1 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs py-2 rounded-lg cursor-pointer"
-                      >
-                        CANCEL
-                      </button>
-                      <button 
-                        type="submit" 
-                        disabled={adding}
-                        className="flex-1 bg-[#1976d2] hover:bg-[#1565c0] text-white font-semibold flex items-center justify-center gap-2 text-xs py-2 rounded-lg cursor-pointer shadow-xs transition-colors"
-                      >
-                        {adding ? 'CONNECTING...' : 'CONNECT REPOSITORY'}
-                      </button>
-                    </div>
-                  </form>
-                )}
+                ) : <LiveUrlScanner />}
               </div>
             </motion.div>
           </div>
