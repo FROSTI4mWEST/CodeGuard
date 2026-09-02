@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { Github, Globe2, Plus } from 'lucide-react';
 import { type Repository } from '../types';
-import { fetchUserRepositories, fetchPublicReposForUser } from '../lib/github';
+import { fetchUserRepositories, fetchPublicReposForUser, checkRepoAvailability } from '../lib/github';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { VulnerabilityDensityMap } from './VulnerabilityDensityMap';
 import { LiveUrlScanner } from './LiveUrlScanner';
@@ -48,6 +48,7 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
   const [customPat, setCustomPat] = useState('');
   const [importingRepoId, setImportingRepoId] = useState<string | null>(null);
   const [showPatInput, setShowPatInput] = useState(false);
+  const repositoryValidationStarted = useRef(false);
 
   useEffect(() => {
     if (!auth.currentUser) {
@@ -76,6 +77,30 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
 
     return () => unsubscribe();
   }, [auth.currentUser?.uid]);
+
+  useEffect(() => {
+    if (!auth.currentUser || loading || repos.length === 0 || repositoryValidationStarted.current) return;
+    repositoryValidationStarted.current = true;
+
+    const removeDeletedRepositories = async () => {
+      const checks = await Promise.all(
+        repos.map(async (repo) => ({
+          repo,
+          availability: await checkRepoAvailability(repo.full_name),
+        }))
+      );
+
+      await Promise.all(
+        checks
+          .filter(({ availability }) => availability === 'missing')
+          .map(({ repo }) => deleteDoc(doc(db, 'repositories', repo.id)))
+      );
+    };
+
+    void removeDeletedRepositories().catch((validationError) => {
+      console.warn('Could not validate connected GitHub repositories:', validationError);
+    });
+  }, [loading, repos]);
 
   // Load authenticated user's GitHub Repositories automatically
   const loadUserGithubRepos = async (tokenOverride?: string) => {

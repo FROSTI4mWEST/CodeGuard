@@ -138,6 +138,21 @@ export async function fetchRepoMetadata(repoUrl: string) {
   }
 }
 
+export async function checkRepoAvailability(fullName: string): Promise<'exists' | 'missing' | 'unknown'> {
+  const parts = fullName.split('/').filter(Boolean);
+  if (parts.length !== 2) return 'unknown';
+
+  const [owner, repo] = parts;
+  try {
+    await getOctokit().rest.repos.get({ owner, repo });
+    return 'exists';
+  } catch (err: any) {
+    if (err?.status === 404) return 'missing';
+    if (err?.status === 401 || err?.status === 403) return 'unknown';
+    return 'unknown';
+  }
+}
+
 export function decodeBase64Content(content: string): string {
   try {
     const clean = content.replace(/\s/g, '');
