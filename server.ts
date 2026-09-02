@@ -434,18 +434,22 @@ function inspectHeaders(url: URL, response: Response, affectedUrl: string): Craw
 function inspectCookies(response: Response, affectedUrl: string): CrawlFinding[] {
   const findings: CrawlFinding[] = [];
   const setCookies = response.headers.getSetCookie?.() || [];
+  const isHttps = new URL(affectedUrl).protocol === "https:";
+  const isSensitiveCookie = (name: string) =>
+    /(^|[-_])(session|sess|auth|token|jwt|sid|csrf|xsrf|login|refresh)([-_]|$)/i.test(name);
+
   for (const cookie of setCookies) {
     const lower = cookie.toLowerCase();
     const nameMatch = cookie.match(/^([^=]+)/);
     const name = nameMatch ? nameMatch[1].trim() : "unknown";
 
-    if (!lower.includes("secure")) {
+    if (isHttps && !lower.includes("secure")) {
       findings.push({ id: "CRAWL-COOKIE-001", severity: "medium", category: "Cookie Security", title: `Cookie "${name}" missing Secure flag`, evidence: `Set-Cookie: ${cookie.substring(0, 100)}`, recommendation: "Add the Secure flag so the cookie is only transmitted over HTTPS.", affectedUrl });
     }
-    if (!lower.includes("httponly") && !lower.includes("__host-") && !lower.includes("__secure-")) {
+    if (isSensitiveCookie(name) && !lower.includes("httponly") && !lower.includes("__host-") && !lower.includes("__secure-")) {
       findings.push({ id: "CRAWL-COOKIE-002", severity: "medium", category: "Cookie Security", title: `Cookie "${name}" missing HttpOnly flag`, evidence: `Set-Cookie: ${cookie.substring(0, 100)}`, recommendation: "Add HttpOnly to prevent client-side JavaScript from reading the cookie.", affectedUrl });
     }
-    if (!lower.includes("samesite")) {
+    if (isSensitiveCookie(name) && !lower.includes("samesite")) {
       findings.push({ id: "CRAWL-COOKIE-003", severity: "low", category: "Cookie Security", title: `Cookie "${name}" missing SameSite attribute`, evidence: `Set-Cookie: ${cookie.substring(0, 100)}`, recommendation: "Set SameSite=Lax or SameSite=Strict to mitigate CSRF attacks.", affectedUrl });
     }
   }
@@ -504,7 +508,27 @@ async function probeSensitivePaths(baseUrl: URL): Promise<{ probed: CrawlResult[
       const contentType = resp.headers.get("content-type") || "";
       // Only flag truly sensitive paths (not robots.txt, sitemap, security.txt which are expected)
       const benign = ["/robots.txt", "/sitemap.xml", "/.well-known/security.txt"];
-      if (!benign.includes(p)) {
+      const highConfidencePath = [".env", ".git/config", ".git/HEAD", ".htpasswd", "backup.sql", "dump.sql", "database.sql", "phpinfo.php", ".dockerenv", "actuator/env"].some(k => p === `/${k}` || p.startsWith(`/${k}/`));
+      const body = await resp.text().catch(() => "");
+      const bodyLower = body.toLowerCase();
+      const expectedContent = p === "/.env"
+        ? /(?:^|\n)\s*[a-z0-9_]+\s*=/.test(body)
+        : p === "/.git/config"
+        ? bodyLower.includes("[core]") || bodyLower.includes("[remote ")
+        : p === "/.git/HEAD"
+        ? bodyLower.startsWith("ref: refs/")
+        : p === "/.htpasswd"
+        ? body.includes(":")
+        : p.endsWith(".sql")
+        ? /\b(create|insert|update|drop)\s+(table|into|database)/i.test(body)
+        : p === "/phpinfo.php"
+        ? bodyLower.includes("phpinfo()")
+        : p === "/.dockerenv"
+        ? !contentType.toLowerCase().includes("text/html")
+        : p === "/actuator/env"
+        ? bodyLower.includes("\"propertysources\"") || bodyLower.includes("\"activeprofiles\"")
+        : false;
+      if (!benign.includes(p) && highConfidencePath && expectedContent) {
         const isHighRisk = [".env", ".git", ".htpasswd", "backup.sql", "dump.sql", "database.sql", "phpinfo", ".dockerenv"].some(k => p.includes(k));
         const severity = isHighRisk ? "critical" as const : "medium" as const;
         findings.push({
@@ -601,19 +625,6 @@ function inspectPageContent(html: string, pageUrl: URL): CrawlFinding[] {
         affectedUrl,
       });
     }
-  }
-
-  // Open redirect patterns in links
-  const redirectParams = /[?&](redirect|return|next|url|goto|dest|continue|target|rurl|callback)\s*=\s*http/gi;
-  const redirectMatches = html.match(redirectParams);
-  if (redirectMatches && redirectMatches.length > 0) {
-    findings.push({
-      id: "CRAWL-REDIR-001", severity: "medium", category: "Open Redirect",
-      title: "Potential open redirect parameter detected",
-      evidence: `${redirectMatches.length} link(s) with external URL redirect parameters found.`,
-      recommendation: "Validate redirect URLs server-side against a whitelist of allowed destinations.",
-      affectedUrl,
-    });
   }
 
   return findings;
@@ -828,12 +839,20 @@ async function inspectDnsPosture(hostname: string): Promise<{ dnsPosture: DnsPos
   let dmarcRaw: string | undefined;
   let dmarcPolicy: DnsPostureInfo["dmarc"]["policy"] = undefined;
   let dmarcRua: string | undefined;
+  let spfLookupSucceeded = false;
+  let dmarcLookupSucceeded = false;
   const caaRecords: string[] = [];
   const mxRecords: string[] = [];
 
   // 1. SPF Record query
   try {
-    const txts = await resolveTxt(hostname).catch(() => resolveTxt(rootDomain)).catch(() => []);
+    let txts: Awaited<ReturnType<typeof resolveTxt>>;
+    try {
+      txts = await resolveTxt(hostname);
+    } catch {
+      txts = await resolveTxt(rootDomain);
+    }
+    spfLookupSucceeded = true;
     for (const chunk of txts) {
       const fullTxt = Array.isArray(chunk) ? chunk.join("") : String(chunk);
       if (fullTxt.startsWith("v=spf1")) {
@@ -852,7 +871,13 @@ async function inspectDnsPosture(hostname: string): Promise<{ dnsPosture: DnsPos
 
   // 2. DMARC Record query
   try {
-    const dmarcTxts = await resolveTxt(`_dmarc.${hostname}`).catch(() => resolveTxt(`_dmarc.${rootDomain}`)).catch(() => []);
+    let dmarcTxts: Awaited<ReturnType<typeof resolveTxt>>;
+    try {
+      dmarcTxts = await resolveTxt(`_dmarc.${hostname}`);
+    } catch {
+      dmarcTxts = await resolveTxt(`_dmarc.${rootDomain}`);
+    }
+    dmarcLookupSucceeded = true;
     for (const chunk of dmarcTxts) {
       const fullTxt = Array.isArray(chunk) ? chunk.join("") : String(chunk);
       if (fullTxt.startsWith("v=DMARC1")) {
@@ -889,7 +914,7 @@ async function inspectDnsPosture(hostname: string): Promise<{ dnsPosture: DnsPos
   } catch {}
 
   // Posture findings
-  if (!spfRaw) {
+  if (spfLookupSucceeded && !spfRaw) {
     findings.push({
       id: "CRAWL-DNS-SPF-MISSING",
       severity: "medium",
@@ -911,7 +936,7 @@ async function inspectDnsPosture(hostname: string): Promise<{ dnsPosture: DnsPos
     });
   }
 
-  if (!dmarcRaw) {
+  if (dmarcLookupSucceeded && !dmarcRaw) {
     findings.push({
       id: "CRAWL-DNS-DMARC-MISSING",
       severity: "medium",
@@ -929,18 +954,6 @@ async function inspectDnsPosture(hostname: string): Promise<{ dnsPosture: DnsPos
       title: "DMARC policy set to 'p=none' (Monitoring mode only)",
       evidence: `DMARC record: ${dmarcRaw}`,
       recommendation: "Transition DMARC policy from 'p=none' to 'p=quarantine' or 'p=reject' once legitimate mail streams are aligned.",
-      affectedUrl: `https://${hostname}`,
-    });
-  }
-
-  if (caaRecords.length === 0) {
-    findings.push({
-      id: "CRAWL-DNS-CAA-MISSING",
-      severity: "info",
-      category: "DNS & Email Posture",
-      title: "No CAA (Certificate Authority Authorization) records configured",
-      evidence: `No CAA DNS records found on ${rootDomain}.`,
-      recommendation: "Publish CAA records (e.g. 'issue letsencrypt.org') to restrict which Certificate Authorities are authorized to issue certificates for your domain.",
       affectedUrl: `https://${hostname}`,
     });
   }
@@ -1050,20 +1063,7 @@ async function startServer() {
       const { probed: sensitivePaths, findings: pathFindings } = await probeSensitivePaths(rootUrl);
       allFindings.push(...pathFindings);
 
-      // Phase 3: Technology exposure finding from headers
-      const serverHeader = techStack.find(t => t.startsWith("Server:"));
-      const poweredByHeaders = techStack.filter(t => !t.startsWith("Server:") && !t.includes("v") && !t.includes("."));
-      if (serverHeader || poweredByHeaders.length > 0) {
-        allFindings.push({
-          id: "CRAWL-TECH-001", severity: "info", category: "Technology Fingerprint",
-          title: "Technology stack exposed via headers",
-          evidence: `Detected: ${techStack.slice(0, 5).join(", ")}`,
-          recommendation: "Minimize technology exposure by removing Server and X-Powered-By headers where practical.",
-          affectedUrl: rootUrl.href,
-        });
-      }
-
-      // Phase 4 & 5: SSL/TLS Certificate inspection & DNS Security Posture
+      // Phase 3 & 4: SSL/TLS Certificate inspection & DNS Security Posture
       const port = rootUrl.port ? Number(rootUrl.port) : 443;
       const [tlsAudit, dnsAudit] = await Promise.all([
         inspectTlsCertificate(rootUrl.hostname, port).catch(() => ({ certInfo: null, findings: [] })),
