@@ -366,7 +366,9 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-white border border-slate-200 w-full max-w-xl rounded-2xl shadow-xl overflow-hidden font-sans max-h-[90vh] flex flex-col"
+              className={`relative bg-white border border-slate-200 w-full ${
+                modalTab === 'live_url' ? 'max-w-4xl' : 'max-w-xl'
+              } rounded-2xl shadow-xl overflow-hidden font-sans max-h-[92vh] flex flex-col`}
             >
               {/* Header */}
               <div className="px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
@@ -413,7 +415,7 @@ export function Dashboard({ onRepoSelect }: { onRepoSelect: (id: string) => void
               </div>
 
               {/* Body */}
-              <div className="p-5 space-y-4 overflow-y-auto flex-1 bg-slate-50/50">
+              <div className={`${modalTab === 'live_url' ? 'p-6' : 'p-5'} space-y-4 overflow-y-auto flex-1 bg-slate-50/50`}>
                 {error && (
                   <div className="p-3 border border-red-200 bg-red-50 text-red-700 rounded-lg text-xs">
                     <span>{error}</span>

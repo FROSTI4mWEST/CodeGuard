@@ -89,6 +89,153 @@ const severityStyle: Record<LiveFinding['severity'], string> = {
   info: 'bg-slate-50 border-slate-200 text-slate-600',
 };
 
+type FindingPresentation = {
+  title: string;
+  meaning: string;
+  fix: string;
+};
+
+function getFindingPresentation(finding: LiveFinding): FindingPresentation {
+  const presentations: Record<string, FindingPresentation> = {
+    'CRAWL-TLS-001': {
+      title: 'Visitors are not fully protected while browsing',
+      meaning: 'This page uses an unencrypted connection, so information sent between the visitor and the site could be viewed or changed.',
+      fix: 'Enable HTTPS, install a valid certificate, and redirect every HTTP request to HTTPS.',
+    },
+    'CRAWL-HDR-001': {
+      title: 'The site is missing a browser safety rule',
+      meaning: 'Without this rule, unsafe scripts or content may have more opportunity to run in a visitor’s browser.',
+      fix: 'Add a Content-Security-Policy that allows only the scripts, styles, images, and connections your site needs.',
+    },
+    'CRAWL-HDR-002': {
+      title: 'Browsers are not being told to always use HTTPS',
+      meaning: 'A visitor could be sent back to an unencrypted version of the site after first visiting securely.',
+      fix: 'Add an HSTS response header and configure it for at least one year after confirming HTTPS works everywhere.',
+    },
+    'CRAWL-HDR-003': {
+      title: 'Browsers may guess the wrong file type',
+      meaning: 'A browser could interpret a downloaded file as something different from what the site intended.',
+      fix: 'Add the X-Content-Type-Options: nosniff header to responses.',
+    },
+    'CRAWL-HDR-004': {
+      title: 'The site may be loadable inside another site',
+      meaning: 'An attacker could try to place your page inside an invisible frame and trick someone into clicking it.',
+      fix: 'Set a frame-ancestors rule in your Content-Security-Policy or use X-Frame-Options: DENY.',
+    },
+    'CRAWL-HDR-005': {
+      title: 'Links may reveal too much browsing history',
+      meaning: 'When visitors follow links away from your site, the destination may learn more about the page they came from than necessary.',
+      fix: 'Set Referrer-Policy: strict-origin-when-cross-origin.',
+    },
+    'CRAWL-HDR-006': {
+      title: 'Browser features are not restricted',
+      meaning: 'The page has not clearly limited features such as the camera, microphone, or location services.',
+      fix: 'Add a Permissions-Policy that disables browser features the application does not need.',
+    },
+    'CRAWL-CORS-001': {
+      title: 'Any website may be able to access signed-in responses',
+      meaning: 'The server allows every website to request data while also allowing credentials, which can expose private information.',
+      fix: 'Allow only trusted website addresses and enable credentials only where they are required.',
+    },
+    'CRAWL-CORS-002': {
+      title: 'The API is open to every website',
+      meaning: 'Any website can ask this server for responses. That may be intentional for a public API, but it is risky for private data.',
+      fix: 'Replace the wildcard with a list of trusted website addresses unless the API is deliberately public.',
+    },
+    'CRAWL-COOKIE-001': {
+      title: 'A browser cookie can travel over an unsafe connection',
+      meaning: 'This cookie is not restricted to secure HTTPS connections, so it may be exposed if HTTP is used.',
+      fix: 'Add the Secure flag to the cookie.',
+    },
+    'CRAWL-COOKIE-002': {
+      title: 'Website scripts can read a browser cookie',
+      meaning: 'If malicious code runs on the page, it may be able to read this cookie and steal the session.',
+      fix: 'Add the HttpOnly flag so client-side JavaScript cannot read the cookie.',
+    },
+    'CRAWL-COOKIE-003': {
+      title: 'A browser cookie has no cross-site sharing rule',
+      meaning: 'Other websites may be able to cause this cookie to be sent with their requests, which can help enable unwanted actions.',
+      fix: 'Set SameSite=Lax or SameSite=Strict unless the application has a documented cross-site requirement.',
+    },
+    'CRAWL-MIXED-001': {
+      title: 'Some page resources are not using HTTPS',
+      meaning: 'This secure page loads one or more images, scripts, or other files over an unencrypted connection.',
+      fix: 'Change every listed resource URL to HTTPS and make sure the provider supports secure delivery.',
+    },
+    'CRAWL-FORM-001': {
+      title: 'A form does not have protection against unwanted submissions',
+      meaning: 'Another website may be able to trick a signed-in visitor into submitting an action they did not intend to make.',
+      fix: 'Add a unique CSRF token to every form that changes data and check it on the server.',
+    },
+    'CRAWL-FORM-002': {
+      title: 'A form sends information without encryption',
+      meaning: 'Data entered into this form can be exposed while it travels to the server.',
+      fix: 'Change the form destination to an HTTPS URL.',
+    },
+    'CRAWL-FORM-003': {
+      title: 'A password field needs safer browser settings',
+      meaning: 'The browser may save or fill this password in situations the application did not intend.',
+      fix: 'Use autocomplete="new-password" for new passwords or autocomplete="off" where appropriate.',
+    },
+    'CRAWL-REDIR-001': {
+      title: 'A link may send visitors to an untrusted website',
+      meaning: 'An attacker could modify a link so your trusted domain redirects visitors to a harmful page.',
+      fix: 'Check redirect destinations on the server against a list of allowed destinations.',
+    },
+    'CRAWL-DNS-SPF-MISSING': {
+      title: 'Anyone could pretend to send email from this domain',
+      meaning: 'The domain has not published a list of servers that are allowed to send its email.',
+      fix: 'Publish an SPF record listing your real email providers and finish it with a restrictive rule such as -all.',
+    },
+    'CRAWL-DNS-DMARC-MISSING': {
+      title: 'Suspicious email has no handling instructions',
+      meaning: 'Receiving mail services are not told what to do when a message pretending to be from this domain fails its checks.',
+      fix: 'Publish a DMARC record and start with monitoring, then move to quarantine or reject after legitimate senders are confirmed.',
+    },
+    'CRAWL-DNS-DMARC-P-NONE': {
+      title: 'Suspicious email is only being monitored',
+      meaning: 'The domain can see possible email impersonation, but receiving mail services are not asked to block or isolate it.',
+      fix: 'After checking reports and confirming legitimate senders, change the policy to quarantine or reject.',
+    },
+    'CRAWL-DNS-CAA-MISSING': {
+      title: 'Any certificate provider may request a certificate',
+      meaning: 'The domain does not restrict which certificate companies may create HTTPS certificates for it.',
+      fix: 'Add CAA records naming the certificate providers you trust.',
+    },
+  };
+
+  const presentation = presentations[finding.id];
+  if (presentation) return presentation;
+
+  if (finding.category === 'Sensitive Path Exposure') {
+    return {
+      title: 'A private file or admin area is publicly reachable',
+      meaning: 'A path that may contain configuration, source code, backups, or administrative tools can be opened by anyone on the internet.',
+      fix: finding.recommendation,
+    };
+  }
+  if (finding.category === 'Outdated Libraries') {
+    return {
+      title: 'The website uses an older software library',
+      meaning: 'Older libraries may contain security problems that attackers already know how to exploit.',
+      fix: finding.recommendation,
+    };
+  }
+  if (finding.category === 'TLS / Certificate') {
+    return {
+      title: 'The website connection certificate needs attention',
+      meaning: 'The certificate used to prove this website is trusted, current, and belongs to the correct domain has a problem.',
+      fix: finding.recommendation,
+    };
+  }
+
+  return {
+    title: finding.title,
+    meaning: finding.evidence,
+    fix: finding.recommendation,
+  };
+}
+
 export function LiveUrlScanner() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -139,7 +286,7 @@ export function LiveUrlScanner() {
           <label className="text-xs font-semibold text-slate-900">
             Public Website or Domain
           </label>
-          <span className="text-[11px] text-slate-400">TLS, DNS Posture, Headers & Endpoints</span>
+          <span className="text-[11px] text-slate-400">HTTPS, email safety, browser protections & exposed files</span>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
@@ -237,14 +384,14 @@ export function LiveUrlScanner() {
             )}
           </div>
 
-          {/* TLS Certificate & DNS Posture Grid */}
+          {/* Website connection and email safety overview */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* TLS / Certificate Card */}
             <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4 text-slate-900" />
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">SSL & Certificate Health</h4>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">Website connection safety</h4>
                 </div>
                 {result.tlsCert ? (
                   <span
@@ -324,7 +471,7 @@ export function LiveUrlScanner() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-slate-900" />
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">Email & Domain Spoofing Defense</h4>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">Email safety & domain protection</h4>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">
                   {result.dnsPosture?.domain || 'DNS'}
@@ -332,64 +479,108 @@ export function LiveUrlScanner() {
               </div>
 
               {result.dnsPosture ? (
-                <div className="space-y-2 text-xs">
+                <div className="space-y-3 text-xs">
                   {/* SPF */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">SPF Record</span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="font-medium text-slate-700">Who can send email</span>
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-slate-400">
+                        Helps stop attackers from sending email that pretends to be from this domain.
+                      </p>
+                    </div>
                     {result.dnsPosture.spf.configured ? (
                       <span
-                        className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-medium border ${
+                        className={`shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-medium ${
                           result.dnsPosture.spf.isPermissive
                             ? 'border-red-200 bg-red-50 text-red-700'
                             : 'border-slate-200 bg-slate-50 text-slate-800'
                         }`}
+                        title={`SPF record: ${result.dnsPosture.spf.raw || 'configured'}`}
                       >
-                        {result.dnsPosture.spf.policy || 'Active'}
+                        {result.dnsPosture.spf.isPermissive
+                          ? 'Anyone can send'
+                          : result.dnsPosture.spf.policy === 'softfail (~all)'
+                          ? 'Unverified senders warned'
+                          : result.dnsPosture.spf.policy === 'hardfail (-all)'
+                          ? 'Unverified senders blocked'
+                          : 'Configured'}
                       </span>
                     ) : (
-                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500">
-                        Missing
+                      <span className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                        Not configured
                       </span>
                     )}
                   </div>
 
                   {/* DMARC */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">DMARC Policy</span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="font-medium text-slate-700">Handling of suspicious email</span>
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-slate-400">
+                        Tells receiving mail services what to do when a message fails the domain checks.
+                      </p>
+                    </div>
                     {result.dnsPosture.dmarc.configured ? (
                       <span
-                        className="rounded-md px-2 py-0.5 font-mono text-[10px] font-medium border border-slate-200 bg-slate-50 text-slate-800"
+                        className={`shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-medium ${
+                          result.dnsPosture.dmarc.policy === 'none'
+                            ? 'border-amber-200 bg-amber-50 text-amber-800'
+                            : 'border-slate-200 bg-slate-50 text-slate-800'
+                        }`}
+                        title={`DMARC policy: p=${result.dnsPosture.dmarc.policy || 'unknown'}`}
                       >
-                        p={result.dnsPosture.dmarc.policy || 'none'}
+                        {result.dnsPosture.dmarc.policy === 'reject'
+                          ? 'Reject suspicious email'
+                          : result.dnsPosture.dmarc.policy === 'quarantine'
+                          ? 'Send suspicious email to spam'
+                          : result.dnsPosture.dmarc.policy === 'none'
+                          ? 'Monitor only'
+                          : 'Policy configured'}
                       </span>
                     ) : (
-                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500">
-                        Missing
+                      <span className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                        Not configured
                       </span>
                     )}
                   </div>
 
                   {/* CAA */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">CAA Records</span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="font-medium text-slate-700">Who can create certificates</span>
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-slate-400">
+                        Limits which certificate companies can create HTTPS certificates for this domain.
+                      </p>
+                    </div>
                     {result.dnsPosture.caa.configured ? (
-                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-700">
-                        {result.dnsPosture.caa.records.length} Configured
+                      <span
+                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-700"
+                        title={`CAA records: ${result.dnsPosture.caa.records.join(', ')}`}
+                      >
+                        {result.dnsPosture.caa.records.length} allowed
                       </span>
                     ) : (
-                      <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400">
-                        Not Set
+                      <span className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                        No restriction
                       </span>
                     )}
                   </div>
 
                   {/* MX */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">Mail Servers (MX)</span>
-                    <span className="font-mono text-[10px] text-slate-600">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="font-medium text-slate-700">Where domain email goes</span>
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-slate-400">
+                        Shows the mail services responsible for receiving email for this domain.
+                      </p>
+                    </div>
+                    <span
+                      className="shrink-0 text-[10px] text-slate-600"
+                      title={`Mail server records: ${result.dnsPosture.mx.records.join(', ') || 'none'}`}
+                    >
                       {result.dnsPosture.mx.configured
-                        ? `${result.dnsPosture.mx.records.length} servers active`
-                        : 'None'}
+                        ? `${result.dnsPosture.mx.records.length} configured`
+                        : 'Not configured'}
                     </span>
                   </div>
                 </div>
@@ -495,11 +686,14 @@ export function LiveUrlScanner() {
               <div className="divide-y divide-slate-100">
                 {filteredFindings.map((finding) => (
                   <div key={`${finding.id}-${finding.affectedUrl}`} className="p-4 hover:bg-slate-50/50 transition-colors">
+                    {(() => {
+                      const presentation = getFindingPresentation(finding);
+                      return (
                     <div className="flex items-start gap-3">
                       <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-slate-900" />
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="text-xs font-semibold text-slate-950">{finding.title}</h5>
+                          <h5 className="text-sm font-semibold text-slate-950">{presentation.title}</h5>
                           <span
                             className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-700"
                           >
@@ -510,14 +704,24 @@ export function LiveUrlScanner() {
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 leading-relaxed">
-                          <span className="font-semibold text-slate-800">Observation:</span> {finding.evidence}
+                          <span className="font-semibold text-slate-800">What this means:</span> {presentation.meaning}
                         </p>
                         <p className="text-xs text-slate-600 leading-relaxed">
-                          <span className="font-semibold text-slate-800">Recommended fix:</span> {finding.recommendation}
+                          <span className="font-semibold text-slate-800">How to fix it:</span> {presentation.fix}
                         </p>
+                        <details className="pt-1">
+                          <summary className="cursor-pointer text-[10px] font-medium text-slate-400 hover:text-slate-600">
+                            Show technical details
+                          </summary>
+                          <p className="mt-1 text-[10px] leading-relaxed text-slate-400">
+                            {finding.title}: {finding.evidence}
+                          </p>
+                        </details>
                         <p className="font-mono text-[10px] text-slate-400 truncate">{finding.affectedUrl}</p>
                       </div>
                     </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
